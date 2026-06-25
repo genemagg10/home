@@ -306,6 +306,20 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
         </div>
       )}
 
+      {/* Review queue banner — top of page, above the ticker and filter, since
+          it's only present when review is needed and isn't structure-specific. */}
+      {data.pendingCount > 0 && (
+        <a href="/review" className="flex items-center gap-3 mb-5 rounded-2xl border border-gold px-5 py-3.5"
+           style={{ background: "linear-gradient(100deg,#fbf4e6,#fdf8ee)" }}>
+          <span className="text-xl">📥</span>
+          <div className="text-sm">
+            <b className="font-serif">{data.pendingCount} new upload{data.pendingCount > 1 ? "s" : ""}</b> waiting in your review queue.
+            I've drafted tags and a couple of suggested reminders — just give them a thumbs up.
+          </div>
+          <span className="ml-auto text-clay-dark font-semibold">Review →</span>
+        </a>
+      )}
+
       {/* Contextual routine ticker — only what's relevant today/tomorrow */}
       {(todayRoutines.length > 0 || tomorrowRoutines.length > 0) && (
         <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap text-sm mb-5 rounded-2xl border border-line bg-card px-4 py-2.5 shadow-soft">
@@ -398,18 +412,7 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
         </div>
       )}
 
-      {/* Review queue banner */}
-      {data.pendingCount > 0 && (
-        <a href="/review" className="flex items-center gap-3 mb-6 rounded-2xl border border-gold px-5 py-3.5"
-           style={{ background: "linear-gradient(100deg,#fbf4e6,#fdf8ee)" }}>
-          <span className="text-xl">📥</span>
-          <div className="text-sm">
-            <b className="font-serif">{data.pendingCount} new upload{data.pendingCount > 1 ? "s" : ""}</b> waiting in your review queue.
-            I've drafted tags and a couple of suggested reminders — just give them a thumbs up.
-          </div>
-          <span className="ml-auto text-clay-dark font-semibold">Review →</span>
-        </a>
-      )}
+      {/* Review queue banner lives near the top (above the ticker + filter). */}
 
       <div className="grid md:grid-cols-2 gap-4">
         {/* Replacements */}
