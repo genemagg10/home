@@ -1,0 +1,33 @@
+{
+  "name": "homebase",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A house dashboard & manual — your home as a queryable, living system.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.69.0",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "googleapis": "^144.0.0",
+    "next": "14.2.15",
+    "pdf-parse": "^1.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "@types/pdf-parse": "^1.1.4",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.6.2"
+  }
+}
