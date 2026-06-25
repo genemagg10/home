@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HomeBase — Style A · Ops Board</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2230; --line:#2a3340;
+    --text:#e6edf3; --muted:#8b97a7; --faint:#5c6878;
+    --accent:#4f9cff; --green:#3fb950; --amber:#d29922; --red:#f85149; --purple:#a371f7;
+    --mono:'SFMono-Regular',ui-monospace,'Cascadia Code',Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.45}
+  .wrap{display:grid;grid-template-columns:1fr 360px;min-height:100vh}
+  /* HEADER */
+  header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--purple));
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+  .brand h1{font-size:15px;letter-spacing:.3px}
+  .brand .sub{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .hbtns{display:flex;gap:8px}
+  .btn{font-family:var(--mono);font-size:12px;padding:7px 12px;border-radius:7px;border:1px solid var(--line);
+    background:var(--panel2);color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#06122a;font-weight:600}
+  .btn:hover{border-color:var(--accent)}
+  /* MAIN */
+  main{padding:20px 22px;overflow:auto}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .metric{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .metric .k{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .metric .v{font-size:26px;font-weight:700;margin-top:4px}
+  .metric .d{font-family:var(--mono);font-size:11px;margin-top:2px}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .card.span2{grid-column:1/-1}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);
+    padding:13px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;font-family:var(--mono)}
+  .card h2 .count{background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:1px 8px;color:var(--text)}
+  .row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #1f2630}
+  .row:last-child{border-bottom:none}
+  .row .name{flex:1}
+  .row .name b{font-weight:600}
+  .row .name small{display:block;color:var(--faint);font-size:11px;margin-top:1px;font-family:var(--mono)}
+  .pill{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap;font-weight:600}
+  .pill.red{background:rgba(248,81,73,.14);color:var(--red)}
+  .pill.amber{background:rgba(210,153,34,.14);color:var(--amber)}
+  .pill.green{background:rgba(63,185,80,.14);color:var(--green)}
+  .pill.blue{background:rgba(79,156,255,.14);color:var(--accent)}
+  .pill.purple{background:rgba(163,113,247,.14);color:var(--purple)}
+  .bar{height:5px;border-radius:4px;background:var(--panel2);overflow:hidden;margin-top:7px}
+  .bar > i{display:block;height:100%;border-radius:4px}
+  .proj{padding:13px 16px;border-bottom:1px solid #1f2630}
+  .proj:last-child{border-bottom:none}
+  .proj .top{display:flex;justify-content:space-between;align-items:center}
+  .vitals{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#1f2630}
+  .vital{background:var(--panel);padding:11px 16px}
+  .vital .k{font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px}
+  .vital .v{font-size:13px;margin-top:2px}
+  .feed .row small{color:var(--muted)}
+  .tag{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:5px;background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+  /* CHAT */
+  aside{border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
+  .chead{padding:15px 18px;border-bottom:1px solid var(--line)}
+  .chead h3{font-size:14px;display:flex;align-items:center;gap:8px}
+  .chead p{color:var(--faint);font-size:12px;margin-top:3px}
+  .chat{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+  .msg{max-width:90%;padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.5}
+  .msg.user{align-self:flex-end;background:var(--accent);color:#06122a;border-bottom-right-radius:3px}
+  .msg.ai{align-self:flex-start;background:var(--panel2);border:1px solid var(--line);border-bottom-left-radius:3px}
+  .msg.ai .src{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+  .suggest{display:flex;flex-direction:column;gap:7px;padding:0 16px 12px}
+  .schip{font-size:12px;text-align:left;padding:8px 11px;border-radius:9px;border:1px solid var(--line);
+    background:var(--panel2);color:var(--muted);cursor:pointer}
+  .schip:hover{border-color:var(--accent);color:var(--text)}
+  .cinput{padding:13px 16px;border-top:1px solid var(--line);display:flex;gap:8px}
+  .cinput input{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;color:var(--text);font-size:13px}
+  .cinput input:focus{outline:none;border-color:var(--accent)}
+  .send{background:var(--accent);border:none;border-radius:9px;width:38px;color:#06122a;font-size:16px;cursor:pointer}
+  .ribbon{grid-column:1/-1;background:rgba(79,156,255,.08);border-bottom:1px solid var(--line);
+    padding:8px 22px;font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;align-items:center;gap:10px}
+  .badge{background:var(--amber);color:#06122a;font-weight:700;border-radius:5px;padding:1px 7px;font-size:11px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">H</div>
+      <div>
+        <h1>The Maple Street House</h1>
+        <div class="sub">1847 Maple St · built 1996 · 2,340 sqft</div>
+      </div>
+    </div>
+    <div class="hbtns">
+      <button class="btn">⤓ Export for sitter</button>
+      <button class="btn primary">+ Add to manual</button>
+    </div>
+  </header>
+
+  <div class="ribbon">
+    <span class="badge">REVIEW QUEUE</span> 3 uploads waiting for you to confirm AI-suggested tags &amp; tasks →
+  </div>
+
+  <main>
+    <div class="metrics">
+      <div class="metric"><div class="k">Overdue</div><div class="v">2</div><div class="d"><span class="dot" style="background:var(--red)"></span><span style="color:var(--red)">needs action</span></div></div>
+      <div class="metric"><div class="k">Due ≤30 days</div><div class="v">4</div><div class="d"><span class="dot" style="background:var(--amber)"></span><span style="color:var(--amber)">upcoming</span></div></div>
+      <div class="metric"><div class="k">Active projects</div><div class="v">3</div><div class="d"><span class="dot" style="background:var(--accent)"></span><span style="color:var(--accent)">in progress</span></div></div>
+      <div class="metric"><div class="k">Docs indexed</div><div class="v">128</div><div class="d"><span class="dot" style="background:var(--green)"></span><span style="color:var(--muted)">searchable</span></div></div>
+    </div>
+
+    <div class="grid">
+      <!-- REPLACEMENTS -->
+      <div class="card">
+        <h2>Replacements &amp; Maintenance <span class="count">6</span></h2>
+        <div class="row"><div class="name"><b>HVAC filter — main unit</b><small>20×25×1 MERV 11 · every 90d · last 03/12</small></div><span class="pill red">OVERDUE 14d</span></div>
+        <div class="row"><div class="name"><b>Fridge water filter</b><small>LG LT1000P · every 180d · last 01/05</small></div><span class="pill red">OVERDUE 9d</span></div>
+        <div class="row"><div class="name"><b>Smoke/CO detector batteries</b><small>9V ×5 · annual · last 09/01</small></div><span class="pill amber">DUE 22d</span></div>
+        <div class="row"><div class="name"><b>Water softener salt</b><small>40lb pellets · ~every 60d</small></div><span class="pill amber">DUE 26d</span></div>
+        <div class="row"><div class="name"><b>Furnace humidifier pad</b><small>Aprilaire #35 · annual</small></div><span class="pill green">OK · 140d</span></div>
+        <div class="row"><div class="name"><b>Garage door lube</b><small>silicone · every 180d</small></div><span class="pill green">OK · 88d</span></div>
+      </div>
+
+      <!-- SEASONAL -->
+      <div class="card">
+        <h2>Seasonal — Summer <span class="count">now</span></h2>
+        <div class="row"><div class="name"><b>Service AC condenser</b><small>hose coils, check refrigerant</small></div><span class="pill amber">THIS MONTH</span></div>
+        <div class="row"><div class="name"><b>Reverse ceiling fans → CCW</b><small>all 4 fans</small></div><span class="pill blue">JUN</span></div>
+        <div class="row"><div class="name"><b>Reseal deck boards</b><small>last done 2 yrs ago</small></div><span class="pill blue">JUN–JUL</span></div>
+        <div class="row"><div class="name"><b>Fertilize lawn (round 2)</b><small>Scotts Step 2</small></div><span class="pill blue">JUL</span></div>
+        <div class="row"><div class="name"><b>Gutter clean</b><small>upcoming season</small></div><span class="pill purple">OCT</span></div>
+        <div class="row"><div class="name"><b>Drain outdoor faucets</b><small>before first freeze</small></div><span class="pill purple">NOV</span></div>
+      </div>
+
+      <!-- PROJECTS -->
+      <div class="card span2">
+        <h2>Active Projects <span class="count">3</span></h2>
+        <div class="proj">
+          <div class="top"><div><b>Primary bathroom remodel</b> &nbsp;<span class="tag">contractor: Reyes Tile</span> <span class="tag">budget $14,200</span></div><span class="pill amber">62%</span></div>
+          <div class="bar"><i style="width:62%;background:var(--amber)"></i></div>
+          <small style="color:var(--faint);font-family:var(--mono)">Next: vanity install Thu · waiting on quartz top · 8 receipts attached</small>
+        </div>
+        <div class="proj">
+          <div class="top"><div><b>Backyard drainage / French drain</b> &nbsp;<span class="tag">DIY</span></div><span class="pill blue">30%</span></div>
+          <div class="bar"><i style="width:30%;background:var(--accent)"></i></div>
+          <small style="color:var(--faint);font-family:var(--mono)">Next: rent trencher · gravel delivered · permit on file</small>
+        </div>
+        <div class="proj">
+          <div class="top"><div><b>Repaint exterior trim</b> &nbsp;<span class="tag">SW Tricorn Black</span></div><span class="pill green">90%</span></div>
+          <div class="bar"><i style="width:90%;background:var(--green)"></i></div>
+          <small style="color:var(--faint);font-family:var(--mono)">Next: final coat on garage door · paint stored in shed</small>
+        </div>
+      </div>
+
+      <!-- VITALS -->
+      <div class="card">
+        <h2>Home Vitals <span class="count">quick ref</span></h2>
+        <div class="vitals">
+          <div class="vital"><div class="k">Water shutoff</div><div class="v">Basement, NW corner behind softener</div></div>
+          <div class="vital"><div class="k">Gas shutoff</div><div class="v">Meter, east side of house</div></div>
+          <div class="vital"><div class="k">Breaker panel</div><div class="v">Garage, photo-mapped (24 circuits)</div></div>
+          <div class="vital"><div class="k">Wi-Fi</div><div class="v">MapleNet · pw in vault</div></div>
+          <div class="vital"><div class="k">Furnace filter size</div><div class="v">20 × 25 × 1</div></div>
+          <div class="vital"><div class="k">Trash / recycle</div><div class="v">Trash Tue · Recycle alt-Fri</div></div>
+        </div>
+      </div>
+
+      <!-- CONTACTS + FEED -->
+      <div class="card feed">
+        <h2>Trusted Contacts <span class="count">5</span></h2>
+        <div class="row"><div class="name"><b>Reyes Tile &amp; Bath</b><small>(555) 204-8831 · current remodel</small></div><span class="pill purple">PRO</span></div>
+        <div class="row"><div class="name"><b>Hank — Plumber</b><small>(555) 661-2090 · knows the house</small></div><span class="pill purple">PRO</span></div>
+        <div class="row"><div class="name"><b>ComfortAir HVAC</b><small>(555) 880-1145 · service contract</small></div><span class="pill purple">PRO</span></div>
+        <div class="row"><div class="name"><b>Dr. Green Lawn</b><small>(555) 332-0091 · quarterly</small></div><span class="pill purple">PRO</span></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- CHAT -->
+  <aside>
+    <div class="chead">
+      <h3>🧠 Ask the House</h3>
+      <p>RAG over 128 docs, manuals &amp; notes</p>
+    </div>
+    <div class="chat">
+      <div class="msg user">What size filter does the upstairs furnace take and when did I last change it?</div>
+      <div class="msg ai">The upstairs furnace (Carrier 59TP6) takes a <b>16 × 25 × 1 MERV 11</b> filter. Last changed <b>March 12</b> — it's now <b>14 days overdue</b> on the 90-day cycle. You have 2 spares in the basement shelf per your last inventory note.
+        <div class="src"><span class="tag">📄 Carrier_manual.pdf</span><span class="tag">📝 Filter log</span></div>
+      </div>
+      <div class="msg user">Where's the deck stain we used?</div>
+      <div class="msg ai">You used <b>Cabot Australian Timber Oil — Honey Teak</b>. Per your June note there's about ¾ of a can left on the <b>shed shelf, second from top</b>. Reseal was flagged for Jun–Jul.
+        <div class="src"><span class="tag">🖼️ stain_can.jpg</span><span class="tag">📝 Deck project</span></div>
+      </div>
+    </div>
+    <div class="suggest">
+      <button class="schip">↻ What maintenance is overdue right now?</button>
+      <button class="schip">🎨 List every paint color by room</button>
+      <button class="schip">🔧 Who installed the water heater &amp; when?</button>
+    </div>
+    <div class="cinput">
+      <input placeholder="Ask anything about your house…">
+      <button class="send">↑</button>
+    </div>
+  </aside>
+</div>
+</body>
+</html>
