@@ -18,7 +18,9 @@ export interface DashboardData {
   pendingCount: number;
 }
 
-const monthInSeason = (s: SeasonalTask, m: number) =>
+// Exported so the client can compute "is this in season now?" for the Year-view
+// toggle without another round trip.
+export const monthInSeason = (s: SeasonalTask, m: number) =>
   s.start_month <= s.end_month
     ? m >= s.start_month && m <= s.end_month
     : m >= s.start_month || m <= s.end_month;
@@ -43,21 +45,20 @@ export async function getDashboardData(): Promise<DashboardData> {
     await Promise.all([
       db.from("houses").select("*").limit(1).single(),
       db.from("maintenance_due").select("*").order("days_remaining", { ascending: true }),
-      db.from("seasonal_tasks").select("*"),
-      db.from("projects").select("*").eq("status", "active"),
+      db.from("seasonal_tasks").select("*").order("start_month"),
+      db.from("projects").select("*").order("created_at", { ascending: false }),
       db.from("vitals").select("*").order("sort"),
       db.from("contacts").select("*"),
       db.from("paints").select("*"),
       db.from("documents").select("id").eq("status", "pending"),
     ]);
 
-  const month = new Date().getMonth() + 1;
-
   return {
     usingSeed: false,
     house: (house.data as House) ?? seed.seedHouse,
     maintenance: (maint.data as MaintenanceItem[]) ?? [],
-    seasonal: ((seasonal.data as SeasonalTask[]) ?? []).filter((s) => monthInSeason(s, month)),
+    // Return the full set; the client filters to "this season" vs "all year".
+    seasonal: (seasonal.data as SeasonalTask[]) ?? [],
     projects: (projects.data as Project[]) ?? [],
     vitals: (vitals.data as Vital[]) ?? [],
     contacts: (contacts.data as Contact[]) ?? [],
