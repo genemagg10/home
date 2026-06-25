@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { supabaseAdmin, isSupabaseConfigured } from "./supabase";
 import * as seed from "./seed-data";
 import type {
@@ -26,6 +27,7 @@ export const monthInSeason = (s: SeasonalTask, m: number) =>
     : m >= s.start_month || m <= s.end_month;
 
 export async function getDashboardData(): Promise<DashboardData> {
+  noStore(); // never serve a cached snapshot — edits must show up immediately
   if (!isSupabaseConfigured() || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return {
       usingSeed: true,
@@ -68,6 +70,7 @@ export async function getDashboardData(): Promise<DashboardData> {
 }
 
 export async function getPendingDocuments(): Promise<DocumentRow[]> {
+  noStore();
   if (!isSupabaseConfigured() || !process.env.SUPABASE_SERVICE_ROLE_KEY) return [];
   const db = supabaseAdmin();
   const { data } = await db
