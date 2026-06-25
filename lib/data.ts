@@ -82,5 +82,17 @@ export async function getPendingDocuments(): Promise<DocumentRow[]> {
     .select("*")
     .eq("status", "pending")
     .order("created_at", { ascending: false });
-  return (data as DocumentRow[]) ?? [];
+  const docs = (data as DocumentRow[]) ?? [];
+
+  // For stored attachments, mint a short-lived signed URL so the review page can
+  // preview the original file (the bucket is private).
+  await Promise.all(
+    docs.map(async (d) => {
+      if (d.source_url && (d.kind === "pdf" || d.kind === "image") && !/^https?:\/\//i.test(d.source_url)) {
+        const { data: signed } = await db.storage.from("inbox").createSignedUrl(d.source_url, 3600);
+        d.file_url = signed?.signedUrl ?? null;
+      }
+    })
+  );
+  return docs;
 }

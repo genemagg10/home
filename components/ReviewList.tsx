@@ -40,6 +40,12 @@ export default function ReviewList({ items }: { items: DocumentRow[] }) {
             </div>
           </div>
           {d.ai_summary && <p className="text-[13.5px] text-muted mt-1">{d.ai_summary}</p>}
+          {d.file_url && (
+            <a href={d.file_url} target="_blank" rel="noopener noreferrer"
+               className="inline-block mt-2 text-[12.5px] text-clay-dark font-semibold underline">
+              {d.kind === "image" ? "🖼️ View image" : "📄 View file"}
+            </a>
+          )}
           {d.ai_tags?.length > 0 && (
             <div className="flex gap-1.5 flex-wrap mt-2">
               {d.ai_tags.map((t) => (

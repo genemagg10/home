@@ -103,6 +103,7 @@ export interface DocumentRow {
   ai_suggested_task: { title: string; interval_days?: number; detail?: string } | null;
   status: "pending" | "published" | "rejected";
   created_at: string;
+  file_url?: string | null; // signed URL for a stored attachment (pdf/image)
 }
 
 export interface Weather {
