@@ -1,19 +1,65 @@
 /**
  * HomeBase — inbox forwarder (Google Apps Script)
- * --------------------------------------------------
+ * ==================================================
  * Runs inside the lospalos@maggio.xyz Workspace mailbox and forwards new email
  * (and attachments) to HomeBase's /api/inbound-email webhook, which extracts the
  * details and files them into your review queue.
  *
- * SETUP
- * 1. Go to https://script.new (signed in as lospalos@maggio.xyz) and paste this in.
- * 2. Set the two values below: WEBHOOK_URL (your Vercel URL) and TOKEN (must match
- *    the INBOX_WEBHOOK_SECRET env var you set in Vercel — any long random string).
- * 3. Run `processInbox` once and approve the Gmail/UrlFetch permissions.
- * 4. Run `installTrigger` once to check the inbox automatically every 15 minutes.
- *
  * Anything that lands in this mailbox gets filed. Forward purchase confirmations,
  * quotes, receipts, manuals, etc. to lospalos@maggio.xyz.
+ *
+ * ──────────────────────────────────────────────────────────────────────────────
+ * FULL SETUP WALKTHROUGH
+ * ──────────────────────────────────────────────────────────────────────────────
+ *
+ * Order matters: do the Vercel env var FIRST (step 0), since this script calls
+ * your live site.
+ *
+ * 0. VERCEL (once):
+ *    - Project → Settings → Environment Variables → add INBOX_WEBHOOK_SECRET set
+ *      to any long random string. (Optional: INBOX_ALLOWED_SENDERS = your email.)
+ *    - Redeploy so the new variable is live.
+ *
+ * 1. OPEN A NEW APPS SCRIPT PROJECT:
+ *    - Sign into Google AS lospalos@maggio.xyz (check the avatar, top-right). This
+ *      matters — the script can only read the mailbox of the account that owns it.
+ *    - In that tab, go to https://script.new and hit enter.
+ *    - A page titled "Untitled project" opens. The big middle area (showing
+ *      `function myFunction() {}`) is the code editor — that's where everything goes.
+ *
+ * 2. PASTE THIS FILE IN:
+ *    - Click in the editor, Select All (Ctrl/Cmd+A), Delete the starter text.
+ *    - Copy this ENTIRE file and paste it into the empty editor.
+ *
+ * 3. EDIT EXACTLY TWO LINES (just below this comment):
+ *    - WEBHOOK_URL → your real Vercel address + /api/inbound-email,
+ *      e.g. 'https://home-xxxx.vercel.app/api/inbound-email'
+ *    - TOKEN → the SAME string you used for INBOX_WEBHOOK_SECRET in Vercel.
+ *    Keep the single quotes and semicolons.
+ *
+ * 4. SAVE:
+ *    - Click the floppy-disk 💾 icon (or Ctrl/Cmd+S). Name it "HomeBase Inbox".
+ *
+ * 5. RUN ONCE TO GRANT PERMISSION:
+ *    - In the toolbar function dropdown, select `processInbox`, click ▶ Run.
+ *    - "Authorization required" → Review permissions → pick lospalos@maggio.xyz.
+ *    - "Google hasn't verified this app" (expected for your own script) →
+ *      Advanced → Go to HomeBase Inbox (unsafe) → Allow. (It's your own code
+ *      reading your own mailbox.)
+ *    - Check the Execution log at the bottom — no red errors means it worked.
+ *
+ * 6. TURN ON THE 15-MINUTE SCHEDULE:
+ *    - Switch the dropdown to `installTrigger`, click ▶ Run (no new prompt).
+ *    - Verify under the ⏰ Triggers icon in the far-left sidebar: one trigger
+ *      calling processInbox on a time interval.
+ *
+ * TO TEST IMMEDIATELY: select `processInbox` and hit ▶ Run, then check the
+ * review queue on your site.
+ *
+ * TROUBLESHOOTING (from the Execution log):
+ *    - 401  → TOKEN here ≠ INBOX_WEBHOOK_SECRET in Vercel.
+ *    - 503  → the Vercel env var hasn't deployed yet (redeploy / wait).
+ *    - 403  → INBOX_ALLOWED_SENDERS is set and the sender didn't match.
  */
 
 const WEBHOOK_URL = 'https://YOUR-APP.vercel.app/api/inbound-email';
