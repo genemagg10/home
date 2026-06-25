@@ -5,7 +5,7 @@ import { useState } from "react";
 export type Field = {
   key: string;
   label: string;
-  type?: "text" | "textarea" | "number" | "money" | "month" | "bool" | "tags" | "color" | "date" | "select";
+  type?: "text" | "textarea" | "number" | "money" | "month" | "bool" | "tags" | "color" | "date" | "select" | "weekdays";
   placeholder?: string;
   options?: { value: string; label: string }[];
   half?: boolean; // render at half width on wider screens
@@ -43,6 +43,7 @@ export default function RecordForm({
       let val = initial?.[f.key];
       if (f.type === "money") val = val != null ? Number(val) / 100 : "";
       else if (f.type === "tags") val = Array.isArray(val) ? val.join(", ") : val ?? "";
+      else if (f.type === "weekdays") val = Array.isArray(val) ? val : [];
       else if (f.type === "bool") val = !!val;
       else val = val ?? "";
       base[f.key] = val;
@@ -63,6 +64,7 @@ export default function RecordForm({
       if (f.type === "number" || f.type === "month") out[f.key] = raw === "" || raw == null ? null : Number(raw);
       else if (f.type === "money") out[f.key] = raw === "" || raw == null ? null : Math.round(Number(raw) * 100);
       else if (f.type === "tags") out[f.key] = String(raw ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+      else if (f.type === "weekdays") out[f.key] = Array.isArray(raw) ? raw : [];
       else if (f.type === "bool") out[f.key] = !!raw;
       else out[f.key] = raw === "" ? null : raw;
     }
@@ -111,6 +113,22 @@ export default function RecordForm({
                     <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
+              ) : f.type === "weekdays" ? (
+                <span className="flex gap-1.5">
+                  {["S", "M", "T", "W", "T", "F", "S"].map((d, idx) => {
+                    const arr = (Array.isArray(v[f.key]) ? (v[f.key] as number[]) : []);
+                    const on = arr.includes(idx);
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => set(f.key, on ? arr.filter((x) => x !== idx) : [...arr, idx].sort())}
+                        className={`w-8 h-8 rounded-full text-xs font-semibold transition-colors ${on ? "bg-sage text-white border border-sage" : "border border-line bg-card hover:border-sage"}`}>
+                        {d}
+                      </button>
+                    );
+                  })}
+                </span>
               ) : f.type === "color" ? (
                 <span className="flex items-center gap-2">
                   <input

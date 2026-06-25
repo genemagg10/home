@@ -16,6 +16,7 @@ const COLUMNS: Record<string, string[]> = {
   contacts: ["name", "phone", "role", "note", "sitter_safe"],
   paints: ["room", "color_name", "brand", "sheen", "hex", "structure_id"],
   appliances: ["name", "brand", "model", "serial", "location", "purchased", "warranty_until", "status", "notes", "emoji", "structure_id"],
+  routines: ["title", "detail", "emoji", "days_of_week", "time_of_day", "sort"],
 };
 
 const NUMERIC: Record<string, string[]> = {
@@ -25,6 +26,7 @@ const NUMERIC: Record<string, string[]> = {
   seasonal_tasks: ["start_month", "end_month"],
   projects: ["percent", "budget_cents"],
   vitals: ["sort"],
+  routines: ["sort"],
 };
 const BOOL: Record<string, string[]> = {
   vitals: ["is_sensitive"],
@@ -32,6 +34,9 @@ const BOOL: Record<string, string[]> = {
 };
 const ARRAY: Record<string, string[]> = {
   projects: ["tags"],
+};
+const INT_ARRAY: Record<string, string[]> = {
+  routines: ["days_of_week"],
 };
 
 export async function POST(req: Request) {
@@ -71,6 +76,8 @@ export async function POST(req: Request) {
     let v: unknown = values[k];
     if (NUMERIC[table]?.includes(k)) v = v === "" || v == null ? null : Number(v);
     else if (BOOL[table]?.includes(k)) v = !!v;
+    else if (INT_ARRAY[table]?.includes(k))
+      v = (Array.isArray(v) ? v : String(v ?? "").split(",")).map(Number).filter((n) => !Number.isNaN(n));
     else if (ARRAY[table]?.includes(k))
       v = Array.isArray(v) ? v : String(v ?? "").split(",").map((s) => s.trim()).filter(Boolean);
     else v = v === "" ? null : v;

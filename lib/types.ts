@@ -92,6 +92,17 @@ export interface Paint {
   structure_id: string | null;
 }
 
+// Lightweight, day-of-week recurring reminders shown in a contextual ticker.
+export interface Routine {
+  id: string;
+  title: string;
+  detail: string | null;
+  emoji: string;
+  days_of_week: number[]; // 0=Sun … 6=Sat
+  time_of_day: string | null;
+  sort: number;
+}
+
 export type ApplianceStatus = "ok" | "service" | "replace";
 
 export interface Appliance {

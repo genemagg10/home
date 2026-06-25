@@ -1,5 +1,5 @@
 import type {
-  House, Structure, MaintenanceItem, SeasonalTask, Project, Vital, Contact, Paint, Appliance,
+  House, Structure, MaintenanceItem, SeasonalTask, Project, Vital, Contact, Paint, Appliance, Routine,
 } from "./types";
 
 // Sample "Maple Street House" data — mirrors the approved mockup so the app
@@ -67,4 +67,9 @@ export const seedAppliances: Appliance[] = [
   { id: "ap2", name: "Furnace", brand: "Carrier", model: "59TP6B", serial: "3618A29104", location: "Basement mechanical", purchased: "2016-10-02", warranty_until: "2026-10-02", status: "ok", notes: "Annual service contract", emoji: "🔥", structure_id: null },
   { id: "ap3", name: "Washer", brand: "Kenmore", model: "110.24072", serial: "CSW1842277", location: "Cottage laundry closet", purchased: "2008-03-01", warranty_until: null, status: "service", notes: "Old — service or plan replacement", emoji: "🧺", structure_id: "cottage" },
   { id: "ap4", name: "Dryer", brand: "Kenmore", model: "110.64072", serial: "MLD0312994", location: "Cottage laundry closet", purchased: "2008-03-01", warranty_until: null, status: "replace", notes: "Loud bearing, long dry times", emoji: "🌀", structure_id: "cottage" },
+];
+
+export const seedRoutines: Routine[] = [
+  { id: "r1", title: "Garbage cans to the curb", detail: "Before Friday morning pickup", emoji: "🗑️", days_of_week: [4], time_of_day: "evening", sort: 0 },
+  { id: "r2", title: "Pick up the yard (dog)", detail: "Before the gardener arrives", emoji: "🐾", days_of_week: [4], time_of_day: "morning", sort: 1 },
 ];

@@ -127,6 +127,19 @@ const FIELDS: Record<string, Field[]> = {
     { key: "warranty_until", label: "Warranty until", type: "date", half: true },
     { key: "notes", label: "Notes", type: "textarea" },
   ],
+  routines: [
+    { key: "title", label: "Title", placeholder: "Garbage cans to the curb" },
+    { key: "emoji", label: "Emoji", half: true, placeholder: "🗑️" },
+    { key: "time_of_day", label: "Time of day", type: "select", half: true, options: [
+      { value: "", label: "Anytime" },
+      { value: "morning", label: "Morning" },
+      { value: "midday", label: "Midday" },
+      { value: "evening", label: "Evening" },
+    ] },
+    { key: "days_of_week", label: "Days it's relevant", type: "weekdays" },
+    { key: "detail", label: "Note", type: "textarea", placeholder: "Before Friday pickup" },
+    { key: "sort", label: "Sort order", type: "number", half: true },
+  ],
 };
 
 const FORM_TITLE: Record<string, string> = {
@@ -139,7 +152,10 @@ const FORM_TITLE: Record<string, string> = {
   contacts: "contact",
   paints: "paint",
   appliances: "appliance",
+  routines: "routine",
 };
+
+const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const applianceStatus: Record<string, { label: string; cls: string }> = {
   ok: { label: "OK", cls: "bg-[#e6efe1] text-sage-dark" },
@@ -179,6 +195,12 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
   const vitals = data.vitals.filter((v) => matchStruct(v.structure_id));
   const paints = data.paints.filter((p) => matchStruct(p.structure_id));
   const appliances = data.appliances.filter((a) => matchStruct(a.structure_id));
+
+  // Routines are whole-property (no structure tag) and surface contextually.
+  const dow = new Date().getDay();
+  const tomorrowDow = (dow + 1) % 7;
+  const todayRoutines = data.routines.filter((r) => r.days_of_week?.includes(dow));
+  const tomorrowRoutines = data.routines.filter((r) => r.days_of_week?.includes(tomorrowDow));
 
   // Tag shown on an item (only while viewing "All") so you can see which
   // building it belongs to at a glance.
@@ -281,6 +303,35 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
           {weather.high != null && <> — high {weather.high}°/low {weather.low}°</>}
           {weather.freezeWarning && <span className="text-rose font-semibold"> · freeze tonight — drain outdoor faucets</span>}
           {weather.heatWarning && <span className="text-clay-dark font-semibold"> · hot — check the AC condenser</span>}
+        </div>
+      )}
+
+      {/* Contextual routine ticker — only what's relevant today/tomorrow */}
+      {(todayRoutines.length > 0 || tomorrowRoutines.length > 0) && (
+        <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap text-sm mb-5 rounded-2xl border border-line bg-card px-4 py-2.5 shadow-soft">
+          <span className="text-base">🗓️</span>
+          {todayRoutines.length > 0 && (
+            <span className="flex items-center gap-x-4 gap-y-1 flex-wrap">
+              <span className="text-[11px] uppercase tracking-wide text-sage-dark font-semibold">Today</span>
+              {todayRoutines.map((r) => (
+                <span key={r.id} className="inline-flex items-center gap-1.5">
+                  <span>{r.emoji}</span>
+                  <b className="font-semibold">{r.title}</b>
+                  {r.detail && <span className="text-muted text-[12.5px]">— {r.detail}</span>}
+                </span>
+              ))}
+            </span>
+          )}
+          {tomorrowRoutines.length > 0 && (
+            <span className="flex items-center gap-x-3 gap-y-1 flex-wrap text-muted">
+              <span className="text-[11px] uppercase tracking-wide text-faint font-semibold">Tomorrow</span>
+              {tomorrowRoutines.map((r) => (
+                <span key={r.id} className="inline-flex items-center gap-1.5 text-[13px]">
+                  <span>{r.emoji}</span>{r.title}
+                </span>
+              ))}
+            </span>
+          )}
         </div>
       )}
 
@@ -519,6 +570,42 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
               )}
             </div>
           ))}
+        </section>
+
+        {/* Weekly routines (management list; the ticker up top shows today's) */}
+        <section className="card md:col-span-2">
+          <h2 className="card-title">🔁 Weekly routines
+            {edit && canManage
+              ? <AddLink table="routines" />
+              : <span className="ml-auto text-xs text-faint font-sans font-normal">recurring</span>}
+          </h2>
+          {data.routines.length === 0 && (
+            <p className="text-muted text-sm">None yet — add things like “bins to the curb” that should just appear on the right day, no checking off.</p>
+          )}
+          <div className="grid sm:grid-cols-2 gap-x-5">
+            {data.routines.map((r) => (
+              <div key={r.id} className="flex items-center gap-3 py-2 border-b border-[#f1ebdd]">
+                <div className="w-[34px] h-[34px] rounded-full grid place-items-center text-[15px] bg-[#eef1e8]">{r.emoji}</div>
+                <div className="flex-1 min-w-0">
+                  <b className="font-semibold">{r.title}</b>
+                  {r.detail && <small className="block text-muted text-[12.5px]">{r.detail}</small>}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="flex gap-1">
+                    {(r.days_of_week ?? []).slice().sort((a, b) => a - b).map((d) => (
+                      <span key={d} className="text-[10.5px] px-1.5 py-0.5 rounded-md bg-[#e3e9ef] text-[#566f8c]">{DOW[d]}</span>
+                    ))}
+                  </span>
+                  {edit && canManage && (
+                    <div className="flex items-center gap-0.5">
+                      <Icon title="Edit" onClick={() => openEdit("routines", r.id, r as unknown as Record<string, unknown>)}>✏️</Icon>
+                      <Icon title="Delete" onClick={() => del("routines", r.id, r.title)}>🗑</Icon>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Appliances */}
