@@ -146,6 +146,14 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
   const openEdit = (table: string, id: string, initial: Record<string, unknown>) =>
     setForm({ table, action: "update", id, initial });
 
+  // "seed" is the sentinel id used when no real houses row exists yet, so the
+  // house pencil inserts the first time (onboarding) and edits thereafter.
+  const hasHouse = data.house.id !== "seed";
+  const openHouseForm = () =>
+    hasHouse
+      ? openEdit("houses", data.house.id, data.house as unknown as Record<string, unknown>)
+      : setForm({ table: "houses", action: "insert" });
+
   // Small icon button used in edit mode.
   const Icon = ({ onClick, title, children }: { onClick: () => void; title: string; children: React.ReactNode }) => (
     <button onClick={onClick} title={title} className="text-faint hover:text-ink text-[13px] leading-none px-1 py-0.5">
@@ -170,8 +178,8 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
           <div>
             <h1 className="font-serif text-2xl font-semibold flex items-center gap-2">
               {data.house.name}
-              {edit && canManage && (
-                <Icon title="Edit house profile" onClick={() => openEdit("houses", data.house.id, data.house as unknown as Record<string, unknown>)}>✏️</Icon>
+              {canManage && (
+                <Icon title="Edit house name, address & details" onClick={openHouseForm}>✏️</Icon>
               )}
             </h1>
             <div className="text-muted text-[13px]">
@@ -212,6 +220,19 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
           {weather.freezeWarning && <span className="text-rose font-semibold"> · freeze tonight — drain outdoor faucets</span>}
           {weather.heatWarning && <span className="text-clay-dark font-semibold"> · hot — check the AC condenser</span>}
         </div>
+      )}
+
+      {/* First-run onboarding — shown until a real house row exists */}
+      {canManage && !hasHouse && (
+        <button onClick={openHouseForm} className="flex w-full items-center gap-3 mb-6 text-left rounded-2xl border border-sage px-5 py-3.5"
+                style={{ background: "linear-gradient(100deg,#eef3ea,#f6f9f3)" }}>
+          <span className="text-xl">👋</span>
+          <div className="text-sm">
+            <b className="font-serif">Welcome — let&apos;s set up your house.</b> Add your home&apos;s name and address to get
+            started. You&apos;re currently seeing sample placeholder details.
+          </div>
+          <span className="ml-auto text-sage-dark font-semibold">Set up →</span>
+        </button>
       )}
 
       {edit && canManage && (
@@ -422,7 +443,9 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
 
       {form && (
         <RecordForm
-          title={`${form.action === "insert" ? "Add" : "Edit"} ${FORM_TITLE[form.table]}`}
+          title={form.table === "houses" && form.action === "insert"
+            ? "Set up your house"
+            : `${form.action === "insert" ? "Add" : "Edit"} ${FORM_TITLE[form.table]}`}
           fields={FIELDS[form.table]}
           initial={form.initial}
           submitLabel={form.action === "insert" ? "Add" : "Save"}
