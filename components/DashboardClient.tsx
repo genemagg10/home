@@ -170,6 +170,7 @@ type FormState = { table: string; action: "insert" | "update"; id?: string; init
 export default function DashboardClient({ data, weather }: { data: DashboardData; weather: Weather | null }) {
   const router = useRouter();
   const [edit, setEdit] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [yearView, setYearView] = useState(false);
   const [allProjects, setAllProjects] = useState(false);
   const [form, setForm] = useState<FormState>(null);
@@ -259,28 +260,30 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
     ) : null;
 
   return (
-    <div className="max-w-[1180px] mx-auto px-6 pb-12">
+    <div className="max-w-[1180px] mx-auto px-4 sm:px-6 pb-12">
       {/* Header */}
-      <header className="flex items-center justify-between py-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl grid place-items-center text-2xl"
+      <header className="flex items-start sm:items-center justify-between gap-3 py-5 sm:py-6">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl grid place-items-center text-xl sm:text-2xl flex-none"
                style={{ background: "linear-gradient(150deg,#7a8b6f,#5f6f55)", boxShadow: "0 4px 14px rgba(122,139,111,.3)" }}>
             🏰
           </div>
-          <div>
-            <h1 className="font-serif text-2xl font-semibold flex items-center gap-2">
+          <div className="min-w-0">
+            <h1 className="font-serif text-xl sm:text-2xl font-semibold flex items-center gap-2 leading-tight">
               {data.house.name}
               {edit && canManage && (
                 <Icon title="Edit house name, address & details" onClick={openHouseForm}>✏️</Icon>
               )}
             </h1>
-            <div className="text-muted text-[13px]">
+            <div className="text-muted text-[12.5px] sm:text-[13px] mt-0.5">
               {[data.house.address, data.house.year_built && `since ${data.house.year_built}`,
                 data.house.sqft && `${data.house.sqft.toLocaleString()} sq ft`].filter(Boolean).join(" · ")}
             </div>
           </div>
         </div>
-        <div className="flex gap-2.5 items-center">
+
+        {/* Desktop actions */}
+        <div className="hidden sm:flex gap-2.5 items-center flex-none">
           <a className="btn" href="/sitter">⤓ Sitter guide</a>
           {canManage && (
             <button className={`btn ${edit ? "btn-primary" : ""}`} onClick={() => setEdit((e) => !e)}>
@@ -289,16 +292,39 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
           )}
           <AddButton />
         </div>
+
+        {/* Mobile hamburger menu */}
+        <div className="sm:hidden relative flex-none">
+          <button className="btn px-3 text-lg leading-none" aria-label="Menu" onClick={() => setMenuOpen((o) => !o)}>
+            {menuOpen ? "✕" : "☰"}
+          </button>
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
+              <div className="absolute right-0 top-12 z-40 w-56 card p-2.5 flex flex-col gap-2">
+                <a className="btn w-full text-center" href="/sitter" onClick={() => setMenuOpen(false)}>⤓ Sitter guide</a>
+                {canManage && (
+                  <button className={`btn w-full ${edit ? "btn-primary" : ""}`} onClick={() => { setEdit((e) => !e); setMenuOpen(false); }}>
+                    {edit ? "✓ Done managing" : "✎ Manage"}
+                  </button>
+                )}
+                <div className="[&>button]:w-full" onClick={() => setMenuOpen(false)}>
+                  <AddButton />
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </header>
 
       {/* Greeting + weather */}
-      <div className="font-serif text-3xl mt-2 mb-1">
+      <div className="font-serif text-[26px] leading-tight sm:text-3xl mt-2 mb-1">
         {needsAttention > 0
           ? <>Good day. Your house has <span className="text-clay">{needsAttention} thing{needsAttention > 1 ? "s" : ""}</span> that need attention.</>
           : <>Good day. Everything's on track at home.</>}
       </div>
       {weather && (
-        <div className="text-muted text-sm mb-5">
+        <div className="text-muted text-[13px] sm:text-sm mb-5 mt-1.5">
           {weather.heatWarning ? "🔥" : weather.freezeWarning ? "❄️" : "☀️"} {weather.tempF}°F & {weather.summary} today
           {weather.high != null && <> — high {weather.high}°/low {weather.low}°</>}
           {weather.freezeWarning && <span className="text-rose font-semibold"> · freeze tonight — drain outdoor faucets</span>}
@@ -320,31 +346,41 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
         </a>
       )}
 
-      {/* Contextual routine ticker — only what's relevant today/tomorrow */}
+      {/* Contextual routine ticker — only what's relevant today/tomorrow.
+          Each routine is its own row so titles/details never split awkwardly. */}
       {(todayRoutines.length > 0 || tomorrowRoutines.length > 0) && (
-        <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap text-sm mb-5 rounded-2xl border border-line bg-card px-4 py-2.5 shadow-soft">
-          <span className="text-base">🗓️</span>
+        <div className="mb-5 rounded-2xl border border-line bg-card px-4 py-3 shadow-soft">
           {todayRoutines.length > 0 && (
-            <span className="flex items-center gap-x-4 gap-y-1 flex-wrap">
-              <span className="text-[11px] uppercase tracking-wide text-sage-dark font-semibold">Today</span>
-              {todayRoutines.map((r) => (
-                <span key={r.id} className="inline-flex items-center gap-1.5">
-                  <span>{r.emoji}</span>
-                  <b className="font-semibold">{r.title}</b>
-                  {r.detail && <span className="text-muted text-[12.5px]">— {r.detail}</span>}
-                </span>
-              ))}
-            </span>
+            <>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span>🗓️</span>
+                <span className="text-[11px] uppercase tracking-wide text-sage-dark font-semibold">Today</span>
+              </div>
+              <ul className="flex flex-col gap-1.5">
+                {todayRoutines.map((r) => (
+                  <li key={r.id} className="flex items-start gap-2 text-sm">
+                    <span className="flex-none leading-5">{r.emoji}</span>
+                    <span className="leading-5">
+                      <b className="font-semibold">{r.title}</b>
+                      {r.detail && <span className="text-muted"> — {r.detail}</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
           {tomorrowRoutines.length > 0 && (
-            <span className="flex items-center gap-x-3 gap-y-1 flex-wrap text-muted">
-              <span className="text-[11px] uppercase tracking-wide text-faint font-semibold">Tomorrow</span>
-              {tomorrowRoutines.map((r) => (
-                <span key={r.id} className="inline-flex items-center gap-1.5 text-[13px]">
-                  <span>{r.emoji}</span>{r.title}
-                </span>
-              ))}
-            </span>
+            <>
+              <div className="text-[11px] uppercase tracking-wide text-faint font-semibold mt-3 mb-1">Tomorrow</div>
+              <ul className="flex flex-col gap-1 text-muted text-[13px]">
+                {tomorrowRoutines.map((r) => (
+                  <li key={r.id} className="flex items-start gap-2">
+                    <span className="flex-none leading-5">{r.emoji}</span>
+                    <span className="leading-5">{r.title}{r.detail && <span className="text-faint"> — {r.detail}</span>}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </div>
       )}
