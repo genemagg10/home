@@ -428,6 +428,11 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
           })}
         </section>
 
+      {/* Ask the House — sits between "Coming up" and Projects */}
+        <div className="md:col-span-2">
+          <AskHouse seed={data.usingSeed} />
+        </div>
+
         {/* Projects */}
         <section className="card md:col-span-2">
           <h2 className="card-title">🏗️ Projects{allProjects ? "" : " in progress"}
@@ -582,9 +587,6 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
           </div>
         </section>
       </div>
-
-      {/* Ask the House */}
-      <AskHouse seed={data.usingSeed} />
 
       <footer className="text-center text-faint text-xs py-8">
         HomeBase · {data.usingSeed ? "showing sample data — connect Supabase to go live" : "live"}

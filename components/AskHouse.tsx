@@ -64,9 +64,9 @@ export default function AskHouse({ seed }: { seed: boolean }) {
   }
 
   return (
-    <div className="mt-4 rounded-xl2 border border-line p-5 shadow-soft"
+    <div className="rounded-xl2 border border-line p-5 shadow-soft"
          style={{ background: "linear-gradient(160deg,#fffdf8,#fbf6ec)" }}>
-      <h2 className="font-serif text-[19px] flex items-center gap-2 mb-1">🪴 Ask the House</h2>
+      <h2 className="card-title">🪴 Ask the House</h2>
       <p className="text-muted text-[13px] mb-4">
         {seed
           ? "Demo mode — connect Supabase + add docs and I'll answer from your real manual."
