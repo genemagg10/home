@@ -1,13 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import type { DocumentRow } from "@/lib/types";
+import type { DocumentRow, Structure } from "@/lib/types";
 
-export default function ReviewList({ items }: { items: DocumentRow[] }) {
+export default function ReviewList({ items, structures = [] }: { items: DocumentRow[]; structures?: Structure[] }) {
   const [docs, setDocs] = useState(items);
   const [acceptTask, setAcceptTask] = useState<Record<string, boolean>>(
     Object.fromEntries(items.map((d) => [d.id, true]))
   );
+  const [acceptAppliance, setAcceptAppliance] = useState<Record<string, boolean>>(
+    Object.fromEntries(items.map((d) => [d.id, !!d.ai_suggested_appliance]))
+  );
+  const [applianceStruct, setApplianceStruct] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
   async function act(id: string, action: "approve" | "reject") {
@@ -16,7 +20,13 @@ export default function ReviewList({ items }: { items: DocumentRow[] }) {
       const res = await fetch("/api/review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, action, acceptTask: acceptTask[id] }),
+        body: JSON.stringify({
+          id,
+          action,
+          acceptTask: acceptTask[id],
+          acceptAppliance: acceptAppliance[id],
+          applianceStructureId: applianceStruct[id] || null,
+        }),
       });
       if (res.ok) setDocs((d) => d.filter((x) => x.id !== id));
     } finally {
@@ -63,6 +73,38 @@ export default function ReviewList({ items }: { items: DocumentRow[] }) {
                 {d.ai_suggested_task.interval_days && <> — every {d.ai_suggested_task.interval_days} days</>}
               </span>
             </label>
+          )}
+
+          {d.ai_suggested_appliance && (
+            <div className="mt-3 text-sm bg-[#eef3ea] border border-sage rounded-xl px-3 py-2.5">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={acceptAppliance[d.id] ?? true}
+                       onChange={(e) => setAcceptAppliance((s) => ({ ...s, [d.id]: e.target.checked }))} />
+                <span>
+                  Add appliance: <b>{d.ai_suggested_appliance.name}</b>
+                  {(d.ai_suggested_appliance.brand || d.ai_suggested_appliance.model) &&
+                    <> — {[d.ai_suggested_appliance.brand, d.ai_suggested_appliance.model].filter(Boolean).join(" ")}</>}
+                </span>
+              </label>
+              <div className="text-[12px] text-muted mt-1 ml-6">
+                {[d.ai_suggested_appliance.serial && `S/N ${d.ai_suggested_appliance.serial}`,
+                  d.ai_suggested_appliance.purchased && `bought ${d.ai_suggested_appliance.purchased}`,
+                  d.ai_suggested_appliance.warranty_until && `warranty to ${d.ai_suggested_appliance.warranty_until}`,
+                ].filter(Boolean).join(" · ")}
+              </div>
+              {structures.length > 0 && (acceptAppliance[d.id] ?? true) && (
+                <div className="mt-2 ml-6 flex items-center gap-2 text-[13px]">
+                  <span className="text-muted">Located in</span>
+                  <select
+                    className="border border-line rounded-lg px-2 py-1 bg-card text-sm outline-none focus:border-sage"
+                    value={applianceStruct[d.id] ?? ""}
+                    onChange={(e) => setApplianceStruct((s) => ({ ...s, [d.id]: e.target.value }))}>
+                    <option value="">🏠 Main House</option>
+                    {structures.map((st) => <option key={st.id} value={st.id}>{st.emoji} {st.name}</option>)}
+                  </select>
+                </div>
+              )}
+            </div>
           )}
 
           <div className="flex gap-2 justify-end mt-3">

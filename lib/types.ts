@@ -92,6 +92,34 @@ export interface Paint {
   structure_id: string | null;
 }
 
+export type ApplianceStatus = "ok" | "service" | "replace";
+
+export interface Appliance {
+  id: string;
+  name: string;
+  brand: string | null;
+  model: string | null;
+  serial: string | null;
+  location: string | null;
+  purchased: string | null;
+  warranty_until: string | null;
+  status: ApplianceStatus;
+  notes: string | null;
+  emoji: string;
+  structure_id: string | null;
+}
+
+// Shape Claude proposes for an appliance from a forwarded purchase email.
+export interface SuggestedAppliance {
+  name: string;
+  brand?: string;
+  model?: string;
+  serial?: string;
+  purchased?: string;
+  warranty_until?: string;
+  notes?: string;
+}
+
 export interface DocumentRow {
   id: string;
   title: string;
@@ -101,6 +129,7 @@ export interface DocumentRow {
   ai_category: string | null;
   ai_tags: string[];
   ai_suggested_task: { title: string; interval_days?: number; detail?: string } | null;
+  ai_suggested_appliance: SuggestedAppliance | null;
   status: "pending" | "published" | "rejected";
   created_at: string;
   file_url?: string | null; // signed URL for a stored attachment (pdf/image)

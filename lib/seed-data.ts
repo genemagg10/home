@@ -1,5 +1,5 @@
 import type {
-  House, Structure, MaintenanceItem, SeasonalTask, Project, Vital, Contact, Paint,
+  House, Structure, MaintenanceItem, SeasonalTask, Project, Vital, Contact, Paint, Appliance,
 } from "./types";
 
 // Sample "Maple Street House" data — mirrors the approved mockup so the app
@@ -60,4 +60,11 @@ export const seedPaints: Paint[] = [
   { id: "2", room: "Living room", color_name: "Edgecomb Gray", brand: "BM", sheen: "eggshell", hex: "#d8d2c4", structure_id: null },
   { id: "3", room: "Primary bath", color_name: "Ripe Olive", brand: "SW", sheen: "matte", hex: "#3f5a52", structure_id: null },
   { id: "4", room: "Kitchen & halls", color_name: "White Dove", brand: "BM", sheen: "eggshell", hex: "#f3efe6", structure_id: null },
+];
+
+export const seedAppliances: Appliance[] = [
+  { id: "ap1", name: "Refrigerator", brand: "LG", model: "LFXS26973S", serial: "402KR00891", location: "Kitchen", purchased: "2019-05-12", warranty_until: null, status: "ok", notes: "Filter LT1000P", emoji: "🧊", structure_id: null },
+  { id: "ap2", name: "Furnace", brand: "Carrier", model: "59TP6B", serial: "3618A29104", location: "Basement mechanical", purchased: "2016-10-02", warranty_until: "2026-10-02", status: "ok", notes: "Annual service contract", emoji: "🔥", structure_id: null },
+  { id: "ap3", name: "Washer", brand: "Kenmore", model: "110.24072", serial: "CSW1842277", location: "Cottage laundry closet", purchased: "2008-03-01", warranty_until: null, status: "service", notes: "Old — service or plan replacement", emoji: "🧺", structure_id: "cottage" },
+  { id: "ap4", name: "Dryer", brand: "Kenmore", model: "110.64072", serial: "MLD0312994", location: "Cottage laundry closet", purchased: "2008-03-01", warranty_until: null, status: "replace", notes: "Loud bearing, long dry times", emoji: "🌀", structure_id: "cottage" },
 ];

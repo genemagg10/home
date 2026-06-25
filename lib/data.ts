@@ -2,7 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { supabaseAdmin, isSupabaseConfigured } from "./supabase";
 import * as seed from "./seed-data";
 import type {
-  House, Structure, MaintenanceItem, SeasonalTask, Project, Vital, Contact, Paint, DocumentRow,
+  House, Structure, MaintenanceItem, SeasonalTask, Project, Vital, Contact, Paint, Appliance, DocumentRow,
 } from "./types";
 
 // Loads everything the dashboard needs. If Supabase isn't configured yet, it
@@ -17,6 +17,7 @@ export interface DashboardData {
   vitals: Vital[];
   contacts: Contact[];
   paints: Paint[];
+  appliances: Appliance[];
   pendingCount: number;
 }
 
@@ -40,12 +41,13 @@ export async function getDashboardData(): Promise<DashboardData> {
       vitals: seed.seedVitals,
       contacts: seed.seedContacts,
       paints: seed.seedPaints,
+      appliances: seed.seedAppliances,
       pendingCount: 3,
     };
   }
 
   const db = supabaseAdmin();
-  const [house, structures, maint, seasonal, projects, vitals, contacts, paints, pending] =
+  const [house, structures, maint, seasonal, projects, vitals, contacts, paints, appliances, pending] =
     await Promise.all([
       db.from("houses").select("*").limit(1).single(),
       db.from("structures").select("*").order("sort"),
@@ -55,6 +57,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       db.from("vitals").select("*").order("sort"),
       db.from("contacts").select("*"),
       db.from("paints").select("*"),
+      db.from("appliances").select("*").order("name"),
       db.from("documents").select("id").eq("status", "pending"),
     ]);
 
@@ -69,8 +72,19 @@ export async function getDashboardData(): Promise<DashboardData> {
     vitals: (vitals.data as Vital[]) ?? [],
     contacts: (contacts.data as Contact[]) ?? [],
     paints: (paints.data as Paint[]) ?? [],
+    appliances: (appliances.data as Appliance[]) ?? [],
     pendingCount: pending.data?.length ?? 0,
   };
+}
+
+// Lightweight structures fetch for pages that need the list (e.g. review queue
+// assigning an approved appliance to a building).
+export async function getStructures(): Promise<Structure[]> {
+  noStore();
+  if (!isSupabaseConfigured() || !process.env.SUPABASE_SERVICE_ROLE_KEY) return seed.seedStructures;
+  const db = supabaseAdmin();
+  const { data } = await db.from("structures").select("*").order("sort");
+  return (data as Structure[]) ?? [];
 }
 
 export async function getPendingDocuments(): Promise<DocumentRow[]> {

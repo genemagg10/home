@@ -111,6 +111,22 @@ const FIELDS: Record<string, Field[]> = {
     { key: "sheen", label: "Sheen", half: true, placeholder: "eggshell" },
     { key: "hex", label: "Swatch", type: "color", half: true },
   ],
+  appliances: [
+    { key: "name", label: "Name", placeholder: "Washer" },
+    { key: "emoji", label: "Emoji", half: true, placeholder: "🧺" },
+    { key: "status", label: "Status", type: "select", half: true, options: [
+      { value: "ok", label: "OK" },
+      { value: "service", label: "Needs service" },
+      { value: "replace", label: "Replace" },
+    ] },
+    { key: "brand", label: "Brand", half: true },
+    { key: "model", label: "Model", half: true },
+    { key: "serial", label: "Serial #", half: true },
+    { key: "location", label: "Location", half: true, placeholder: "Cottage laundry" },
+    { key: "purchased", label: "Purchased", type: "date", half: true },
+    { key: "warranty_until", label: "Warranty until", type: "date", half: true },
+    { key: "notes", label: "Notes", type: "textarea" },
+  ],
 };
 
 const FORM_TITLE: Record<string, string> = {
@@ -122,6 +138,13 @@ const FORM_TITLE: Record<string, string> = {
   vitals: "vital",
   contacts: "contact",
   paints: "paint",
+  appliances: "appliance",
+};
+
+const applianceStatus: Record<string, { label: string; cls: string }> = {
+  ok: { label: "OK", cls: "bg-[#e6efe1] text-sage-dark" },
+  service: { label: "Needs service", cls: "bg-[#f8efd6] text-[#9a7d1f]" },
+  replace: { label: "Replace", cls: "bg-[#f7e4e0] text-rose" },
 };
 
 const freezeRe = /faucet|drain|hose|pipe|freeze|outdoor|gutter/i;
@@ -155,6 +178,7 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
   const projects = allProjects ? projectsAll : projectsAll.filter((p) => p.status === "active");
   const vitals = data.vitals.filter((v) => matchStruct(v.structure_id));
   const paints = data.paints.filter((p) => matchStruct(p.structure_id));
+  const appliances = data.appliances.filter((a) => matchStruct(a.structure_id));
 
   // Tag shown on an item (only while viewing "All") so you can see which
   // building it belongs to at a glance.
@@ -166,9 +190,9 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
   };
 
   // Append a Structure dropdown to forms for taggable tables.
-  const STRUCT_TAGGABLE = new Set(["maintenance_items", "seasonal_tasks", "projects", "vitals", "paints"]);
+  const STRUCT_TAGGABLE = new Set(["maintenance_items", "seasonal_tasks", "projects", "vitals", "paints", "appliances"]);
   const structOptions = [
-    { value: "", label: "⌂ Main House (whole property)" },
+    { value: "", label: "🏠 Main House (whole property)" },
     ...structures.map((s) => ({ value: s.id, label: `${s.emoji} ${s.name}` })),
   ];
   const fieldsFor = (table: string): Field[] => {
@@ -217,9 +241,9 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
       {/* Header */}
       <header className="flex items-center justify-between py-6">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl grid place-items-center text-white text-2xl font-serif"
+          <div className="w-12 h-12 rounded-2xl grid place-items-center text-2xl"
                style={{ background: "linear-gradient(150deg,#7a8b6f,#5f6f55)", boxShadow: "0 4px 14px rgba(122,139,111,.3)" }}>
-            ⌂
+            🏰
           </div>
           <div>
             <h1 className="font-serif text-2xl font-semibold flex items-center gap-2">
@@ -282,7 +306,7 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
       {/* Structure filter — only shown once there's more than the Main House */}
       {(structures.length > 0 || (edit && canManage)) && (
         <div className="flex items-center flex-wrap gap-2 mb-4">
-          {([["all", "All"], ["main", "⌂ Main House"]] as const).map(([val, label]) => (
+          {([["all", "All"], ["main", "🏠 Main House"]] as const).map(([val, label]) => (
             <button key={val} onClick={() => setStructFilter(val)}
               className={`text-sm px-3.5 py-1.5 rounded-full border transition-colors ${structFilter === val ? "bg-sage text-white border-sage" : "border-line bg-card hover:border-sage"}`}>
               {label}
@@ -490,6 +514,48 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
               )}
             </div>
           ))}
+        </section>
+
+        {/* Appliances */}
+        <section className="card md:col-span-2">
+          <h2 className="card-title">🔌 Appliances
+            {edit && canManage
+              ? <AddLink table="appliances" />
+              : <span className="ml-auto text-xs text-faint font-sans font-normal">{appliances.length} tracked</span>}
+          </h2>
+          {appliances.length === 0 && <p className="text-muted text-sm">None tracked yet — forward a purchase email or add one in Manage.</p>}
+          <div className="grid sm:grid-cols-2 gap-x-5">
+            {appliances.map((a) => {
+              const st = applianceStatus[a.status] ?? applianceStatus.ok;
+              return (
+                <div key={a.id} className="flex items-start gap-3 py-2.5 border-b border-[#f1ebdd]">
+                  <div className="w-[34px] h-[34px] rounded-full grid place-items-center text-[15px] bg-[#eef1e8]">{a.emoji}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <b className="font-semibold">{a.name}</b>
+                      <span className={`pill ${st.cls}`}>{st.label}</span>
+                      <StructTag id={a.structure_id} />
+                    </div>
+                    <small className="block text-muted text-[12.5px] mt-0.5">
+                      {[[a.brand, a.model].filter(Boolean).join(" "), a.location].filter(Boolean).join(" · ")}
+                    </small>
+                    <small className="block text-faint text-[11.5px] mt-0.5">
+                      {[a.serial && `S/N ${a.serial}`,
+                        a.purchased && `bought ${a.purchased}`,
+                        a.warranty_until && `warranty to ${a.warranty_until}`].filter(Boolean).join(" · ")}
+                    </small>
+                    {a.notes && <small className="block text-muted text-[12px] mt-0.5">{a.notes}</small>}
+                  </div>
+                  {edit && canManage && (
+                    <div className="flex items-center gap-0.5">
+                      <Icon title="Edit" onClick={() => openEdit("appliances", a.id, a as unknown as Record<string, unknown>)}>✏️</Icon>
+                      <Icon title="Delete" onClick={() => del("appliances", a.id, a.name)}>🗑</Icon>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </section>
 
         {/* Contacts */}

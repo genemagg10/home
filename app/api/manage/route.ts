@@ -15,6 +15,7 @@ const COLUMNS: Record<string, string[]> = {
   vitals: ["label", "value", "is_sensitive", "sort", "structure_id"],
   contacts: ["name", "phone", "role", "note", "sitter_safe"],
   paints: ["room", "color_name", "brand", "sheen", "hex", "structure_id"],
+  appliances: ["name", "brand", "model", "serial", "location", "purchased", "warranty_until", "status", "notes", "emoji", "structure_id"],
 };
 
 const NUMERIC: Record<string, string[]> = {

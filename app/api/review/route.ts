@@ -8,10 +8,12 @@ export const maxDuration = 60;
 // document into the searchable manual — embeds its chunks and (optionally)
 // creates the AI-suggested recurring reminder.
 export async function POST(req: Request) {
-  const { id, action, acceptTask } = (await req.json()) as {
+  const { id, action, acceptTask, acceptAppliance, applianceStructureId } = (await req.json()) as {
     id: string;
     action: "approve" | "reject";
     acceptTask?: boolean;
+    acceptAppliance?: boolean;
+    applianceStructureId?: string | null;
   };
 
   if (!isSupabaseConfigured() || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -58,6 +60,26 @@ export async function POST(req: Request) {
       interval_days: t.interval_days ?? null,
       last_done: new Date().toISOString().slice(0, 10),
       category: "replacement",
+    });
+  }
+
+  // Optionally register the AI-suggested appliance (e.g. from a purchase email).
+  if (acceptAppliance && doc.ai_suggested_appliance) {
+    const a = doc.ai_suggested_appliance as {
+      name: string; brand?: string; model?: string; serial?: string;
+      purchased?: string; warranty_until?: string; notes?: string;
+    };
+    await db.from("appliances").insert({
+      house_id: doc.house_id,
+      structure_id: applianceStructureId || null,
+      name: a.name,
+      brand: a.brand || null,
+      model: a.model || null,
+      serial: a.serial || null,
+      purchased: a.purchased || null,
+      warranty_until: a.warranty_until || null,
+      notes: a.notes || null,
+      status: "ok",
     });
   }
 

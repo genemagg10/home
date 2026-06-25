@@ -44,6 +44,7 @@ export async function POST(req: Request) {
       ai_category: suggestion?.category ?? null,
       ai_tags: suggestion?.tags ?? [],
       ai_suggested_task: suggestion?.suggested_task ?? null,
+      ai_suggested_appliance: suggestion?.appliance ?? null,
       status: "pending",
     })
     .select("id")

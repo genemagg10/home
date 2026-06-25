@@ -1,10 +1,10 @@
-import { getPendingDocuments } from "@/lib/data";
+import { getPendingDocuments, getStructures } from "@/lib/data";
 import ReviewList from "@/components/ReviewList";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReviewPage() {
-  const pending = await getPendingDocuments();
+  const [pending, structures] = await Promise.all([getPendingDocuments(), getStructures()]);
   return (
     <div className="max-w-[760px] mx-auto px-6 py-8">
       <a href="/" className="text-muted text-sm">← Back to dashboard</a>
@@ -15,7 +15,7 @@ export default async function ReviewPage() {
       </p>
       {pending.length === 0
         ? <div className="card text-muted">Nothing waiting. Add a note, link, PDF, or photo from the dashboard.</div>
-        : <ReviewList items={pending} />}
+        : <ReviewList items={pending} structures={structures} />}
     </div>
   );
 }
