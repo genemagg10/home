@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import { supabaseAdmin } from "./supabase";
+import { googleRedirectUri } from "./site";
 
 // One-way push to Google Calendar: HomeBase writes maintenance/seasonal due dates
 // out as all-day events. We never read the user's calendar back.
@@ -9,7 +10,7 @@ export function oauthClient() {
   return new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI
+    googleRedirectUri()
   );
 }
 
@@ -22,7 +23,7 @@ export function authUrl(): string {
 }
 
 export function googleConfigured(): boolean {
-  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REDIRECT_URI);
+  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 }
 
 // Returns an authorized client using the stored refresh token, or null if the

@@ -26,32 +26,70 @@ renders the sample "Maple Street House" so you can click around immediately.
 
 ---
 
-## Quick start
+## Hosting (GitHub is the source of truth)
+
+This repo is wired so **the files in GitHub are what Supabase and Vercel run** —
+push to `main` and both update. You don't run it from your computer; it lives
+online and you reach it from any device.
+
+```
+                 ┌──────────► Vercel  (auto-deploys the app on every push)
+   GitHub  ──────┤
+   (main)        └──────────► Supabase (CI applies supabase/migrations/** on push)
+```
+
+### 1. Supabase (database)
+1. Create a project at supabase.com. Note your **project ref** (the `xxxx` in
+   `xxxx.supabase.co`), database password, and from Settings → API the URL +
+   `anon` + `service_role` keys.
+2. Add three **GitHub repo secrets** (Settings → Secrets and variables → Actions):
+   `SUPABASE_ACCESS_TOKEN` (account token), `SUPABASE_PROJECT_REF`, `SUPABASE_DB_PASSWORD`.
+3. That's it — `.github/workflows/supabase-migrations.yml` applies
+   `supabase/migrations/**` to your project on every push to `main` (and you can
+   run it on demand from the Actions tab). To load the sample content once, paste
+   `supabase/seed.sql` into the Supabase SQL editor.
+
+> Prefer Supabase's own GitHub integration? It does the same thing — point it at
+> this repo and the `supabase/` directory. The included workflow is the
+> no-dashboard equivalent.
+
+### 2. Vercel (the app)
+1. **Import this GitHub repo** at vercel.com → New Project. Framework auto-detects
+   as Next.js; no build settings to change.
+2. Add the environment variables below in Vercel (Project → Settings → Environment
+   Variables). Vercel redeploys on every push, and previews on every branch.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/genemagg10/home)
+
+### 3. Environment variables (set these in Vercel)
+| Variable | Needed for |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Live data |
+| `ANTHROPIC_API_KEY` | Chat (Opus 4.8) + upload tagging (Haiku 4.5) |
+| `OPENAI_API_KEY` | RAG embeddings (`text-embedding-3-small`, 1536-dim) |
+| `HOMEBASE_LAT`, `HOMEBASE_LON` | Live weather + freeze/heat nudges |
+| `NEXT_PUBLIC_SITE_URL` | Only if you use a custom domain (else auto-detected) |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Calendar push (optional) |
+| `CRON_SECRET` | Optional: protects the daily calendar-sync cron |
+
+The app **renders sample data with none of these set**, so the first deploy works
+immediately; fill them in to go live. The OAuth redirect and all internal links
+derive from your deployed URL — there are no hardcoded `localhost` references in
+the running app.
+
+### Google Calendar (optional)
+Create an OAuth **Web** client in Google Cloud. Set the authorized redirect URI to
+`https://YOUR-APP.vercel.app/api/calendar/callback` (must match your deployed URL).
+Then visit `/api/calendar/auth` once to connect — `vercel.json` already schedules a
+daily push of upcoming due dates.
+
+## Local development (optional)
 
 ```bash
 npm install
-cp .env.example .env.local      # fill in as you connect each piece
-npm run dev                     # http://localhost:3000  (sample data)
+cp .env.example .env.local      # same vars as above
+npm run dev                     # http://localhost:3000
 ```
-
-### Go live with Supabase
-1. Create a Supabase project. In the SQL editor, run `supabase/migrations/0001_init.sql`
-   then `0002_integrations.sql`. Optionally run `supabase/seed.sql` for sample content.
-2. Put `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and
-   `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`.
-
-### Enable the AI
-- `ANTHROPIC_API_KEY` → chat + upload tagging (Opus 4.8 chat, Haiku 4.5 extraction).
-- `OPENAI_API_KEY` → embeddings for RAG (`text-embedding-3-small`, 1536-dim).
-  Anthropic has no embeddings endpoint; swap the provider in `lib/embeddings.ts`.
-
-### Weather
-- Set `HOMEBASE_LAT` / `HOMEBASE_LON` to your house. That's it.
-
-### Google Calendar (optional)
-1. Create an OAuth Web client in Google Cloud; set the three `GOOGLE_*` vars.
-2. Visit `/api/calendar/auth` once to connect, then `POST /api/calendar/sync`
-   (or wire it to a Vercel Cron) to push upcoming due dates.
 
 ---
 

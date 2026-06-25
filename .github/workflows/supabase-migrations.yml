@@ -1,0 +1,32 @@
+# Applies the SQL migrations in supabase/migrations/ to your hosted Supabase
+# project whenever they change on main — so GitHub is the source of truth for
+# your database schema.
+#
+# One-time setup: add these repository secrets (Settings → Secrets → Actions):
+#   SUPABASE_ACCESS_TOKEN  — from https://supabase.com/dashboard/account/tokens
+#   SUPABASE_PROJECT_REF   — your project ref (the xxxx in xxxx.supabase.co)
+#   SUPABASE_DB_PASSWORD   — your project's database password
+name: Supabase migrations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+  workflow_dispatch: {}
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Link project
+        run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+      - name: Push migrations
+        run: supabase db push

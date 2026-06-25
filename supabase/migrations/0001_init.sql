@@ -216,6 +216,7 @@ begin
     'vitals','contacts','paints','documents','doc_chunks'
   ]
   loop
+    execute format('drop policy if exists %I on %I;', t || '_read_anon', t);
     execute format(
       'create policy %I on %I for select using (true);',
       t || '_read_anon', t

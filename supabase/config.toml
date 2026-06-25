@@ -1,0 +1,7 @@
+# Supabase CLI config. `project_id` is just a local label; the deployed project
+# is selected by `supabase link --project-ref <ref>` (see the CI workflow).
+project_id = "homebase"
+
+[db]
+# Must match the major version of your hosted Postgres (Supabase is on 15).
+major_version = 15
