@@ -1,5 +1,5 @@
 import type {
-  House, MaintenanceItem, SeasonalTask, Project, Vital, Contact, Paint,
+  House, Structure, MaintenanceItem, SeasonalTask, Project, Vital, Contact, Paint,
 } from "./types";
 
 // Sample "Maple Street House" data — mirrors the approved mockup so the app
@@ -10,35 +10,42 @@ export const seedHouse: House = {
   lat: 39.7684, lon: -86.1581, trash_day: "Tuesday", recycle_day: "alternate Friday",
 };
 
+// One extra building so the structure filter has something to show in the demo.
+export const seedStructures: Structure[] = [
+  { id: "cottage", name: "The Cottage", kind: "adu", sqft: 600, beds: 2, baths: 1,
+    notes: "Backyard ADU — kitchen, living, 1 bath w/ shower. Washer & dryer are old.", emoji: "🏡", sort: 1 },
+];
+
 export const seedMaintenance: MaintenanceItem[] = [
-  { id: "1", title: "HVAC filter — main unit", detail: "20×25×1 MERV 11 · 2 spares in basement", category: "replacement", interval_days: 90, last_done: null, emoji: "⚠️", due_date: null, status: "overdue", days_remaining: -14 },
-  { id: "2", title: "Fridge water filter", detail: "LG LT1000P · order link saved", category: "replacement", interval_days: 180, last_done: null, emoji: "💧", due_date: null, status: "overdue", days_remaining: -9 },
-  { id: "3", title: "Detector batteries", detail: "9V ×5 · annual swap", category: "replacement", interval_days: 365, last_done: null, emoji: "🔋", due_date: null, status: "soon", days_remaining: 22 },
-  { id: "4", title: "Water softener salt", detail: "40lb pellets", category: "replacement", interval_days: 60, last_done: null, emoji: "🧂", due_date: null, status: "soon", days_remaining: 26 },
-  { id: "5", title: "Furnace humidifier pad", detail: "Aprilaire #35", category: "replacement", interval_days: 365, last_done: null, emoji: "✓", due_date: null, status: "ok", days_remaining: 140 },
+  { id: "1", title: "HVAC filter — main unit", detail: "20×25×1 MERV 11 · 2 spares in basement", category: "replacement", interval_days: 90, last_done: null, emoji: "⚠️", due_date: null, status: "overdue", days_remaining: -14, structure_id: null },
+  { id: "2", title: "Fridge water filter", detail: "LG LT1000P · order link saved", category: "replacement", interval_days: 180, last_done: null, emoji: "💧", due_date: null, status: "overdue", days_remaining: -9, structure_id: null },
+  { id: "3", title: "Detector batteries", detail: "9V ×5 · annual swap", category: "replacement", interval_days: 365, last_done: null, emoji: "🔋", due_date: null, status: "soon", days_remaining: 22, structure_id: null },
+  { id: "4", title: "Water softener salt", detail: "40lb pellets", category: "replacement", interval_days: 60, last_done: null, emoji: "🧂", due_date: null, status: "soon", days_remaining: 26, structure_id: null },
+  { id: "5", title: "Furnace humidifier pad", detail: "Aprilaire #35", category: "replacement", interval_days: 365, last_done: null, emoji: "✓", due_date: null, status: "ok", days_remaining: 140, structure_id: null },
+  { id: "6", title: "Service washer & dryer", detail: "Old units — service or plan replacement", category: "service", interval_days: 180, last_done: null, emoji: "🧺", due_date: null, status: "soon", days_remaining: 12, structure_id: "cottage" },
 ];
 
 export const seedSeasonal: SeasonalTask[] = [
-  { id: "1", title: "Service the AC condenser", detail: "rinse coils, check the refrigerant", start_month: 6, end_month: 6, emoji: "❄️" },
-  { id: "2", title: "Reverse ceiling fans", detail: "counter-clockwise for summer · all 4", start_month: 6, end_month: 6, emoji: "🌀" },
-  { id: "3", title: "Reseal the deck", detail: "Cabot Honey Teak · ¾ can in shed", start_month: 6, end_month: 7, emoji: "🪵" },
-  { id: "4", title: "Fertilize the lawn", detail: "Scotts Step 2", start_month: 7, end_month: 7, emoji: "🌱" },
-  { id: "5", title: "Gutter cleaning", detail: "upcoming this fall", start_month: 10, end_month: 10, emoji: "🍂" },
+  { id: "1", title: "Service the AC condenser", detail: "rinse coils, check the refrigerant", start_month: 6, end_month: 6, emoji: "❄️", structure_id: null },
+  { id: "2", title: "Reverse ceiling fans", detail: "counter-clockwise for summer · all 4", start_month: 6, end_month: 6, emoji: "🌀", structure_id: null },
+  { id: "3", title: "Reseal the deck", detail: "Cabot Honey Teak · ¾ can in shed", start_month: 6, end_month: 7, emoji: "🪵", structure_id: null },
+  { id: "4", title: "Fertilize the lawn", detail: "Scotts Step 2", start_month: 7, end_month: 7, emoji: "🌱", structure_id: null },
+  { id: "5", title: "Gutter cleaning", detail: "upcoming this fall", start_month: 10, end_month: 10, emoji: "🍂", structure_id: null },
 ];
 
 export const seedProjects: Project[] = [
-  { id: "1", title: "Primary bathroom remodel", status: "active", percent: 62, next_step: "Vanity install Thursday, waiting on the quartz top.", budget_cents: 1420000, contractor: "Reyes Tile & Bath", tags: ["8 receipts"] },
-  { id: "2", title: "Backyard French drain", status: "active", percent: 30, next_step: "Rent the trencher this weekend.", budget_cents: null, contractor: null, tags: ["DIY", "permit on file", "gravel delivered"] },
-  { id: "3", title: "Repaint exterior trim", status: "active", percent: 90, next_step: "Final coat on the garage door.", budget_cents: null, contractor: null, tags: ["SW Tricorn Black", "paint in shed"] },
+  { id: "1", title: "Primary bathroom remodel", status: "active", percent: 62, next_step: "Vanity install Thursday, waiting on the quartz top.", budget_cents: 1420000, contractor: "Reyes Tile & Bath", tags: ["8 receipts"], structure_id: null },
+  { id: "2", title: "Backyard French drain", status: "active", percent: 30, next_step: "Rent the trencher this weekend.", budget_cents: null, contractor: null, tags: ["DIY", "permit on file", "gravel delivered"], structure_id: null },
+  { id: "3", title: "Repaint exterior trim", status: "active", percent: 90, next_step: "Final coat on the garage door.", budget_cents: null, contractor: null, tags: ["SW Tricorn Black", "paint in shed"], structure_id: null },
 ];
 
 export const seedVitals: Vital[] = [
-  { id: "1", label: "Water shutoff", value: "Basement, NW corner behind the softener", is_sensitive: false, sort: 0 },
-  { id: "2", label: "Gas shutoff", value: "At the meter, east side", is_sensitive: false, sort: 1 },
-  { id: "3", label: "Breaker panel", value: "Garage — photo-mapped, 24 circuits", is_sensitive: false, sort: 2 },
-  { id: "4", label: "Trash & recycle", value: "Trash Tue · Recycle alt-Friday", is_sensitive: false, sort: 3 },
-  { id: "5", label: "Furnace filter", value: "20 × 25 × 1", is_sensitive: false, sort: 4 },
-  { id: "6", label: "Wi-Fi", value: "MapleNet · password in vault", is_sensitive: true, sort: 5 },
+  { id: "1", label: "Water shutoff", value: "Basement, NW corner behind the softener", is_sensitive: false, sort: 0, structure_id: null },
+  { id: "2", label: "Gas shutoff", value: "At the meter, east side", is_sensitive: false, sort: 1, structure_id: null },
+  { id: "3", label: "Breaker panel", value: "Garage — photo-mapped, 24 circuits", is_sensitive: false, sort: 2, structure_id: null },
+  { id: "4", label: "Trash & recycle", value: "Trash Tue · Recycle alt-Friday", is_sensitive: false, sort: 3, structure_id: null },
+  { id: "5", label: "Furnace filter", value: "20 × 25 × 1", is_sensitive: false, sort: 4, structure_id: null },
+  { id: "6", label: "Wi-Fi", value: "MapleNet · password in vault", is_sensitive: true, sort: 5, structure_id: null },
 ];
 
 export const seedContacts: Contact[] = [
@@ -49,8 +56,8 @@ export const seedContacts: Contact[] = [
 ];
 
 export const seedPaints: Paint[] = [
-  { id: "1", room: "Exterior trim", color_name: "Tricorn Black", brand: "SW", sheen: "satin", hex: "#2b2b2e" },
-  { id: "2", room: "Living room", color_name: "Edgecomb Gray", brand: "BM", sheen: "eggshell", hex: "#d8d2c4" },
-  { id: "3", room: "Primary bath", color_name: "Ripe Olive", brand: "SW", sheen: "matte", hex: "#3f5a52" },
-  { id: "4", room: "Kitchen & halls", color_name: "White Dove", brand: "BM", sheen: "eggshell", hex: "#f3efe6" },
+  { id: "1", room: "Exterior trim", color_name: "Tricorn Black", brand: "SW", sheen: "satin", hex: "#2b2b2e", structure_id: null },
+  { id: "2", room: "Living room", color_name: "Edgecomb Gray", brand: "BM", sheen: "eggshell", hex: "#d8d2c4", structure_id: null },
+  { id: "3", room: "Primary bath", color_name: "Ripe Olive", brand: "SW", sheen: "matte", hex: "#3f5a52", structure_id: null },
+  { id: "4", room: "Kitchen & halls", color_name: "White Dove", brand: "BM", sheen: "eggshell", hex: "#f3efe6", structure_id: null },
 ];

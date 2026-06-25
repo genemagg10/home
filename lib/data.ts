@@ -2,7 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { supabaseAdmin, isSupabaseConfigured } from "./supabase";
 import * as seed from "./seed-data";
 import type {
-  House, MaintenanceItem, SeasonalTask, Project, Vital, Contact, Paint, DocumentRow,
+  House, Structure, MaintenanceItem, SeasonalTask, Project, Vital, Contact, Paint, DocumentRow,
 } from "./types";
 
 // Loads everything the dashboard needs. If Supabase isn't configured yet, it
@@ -10,6 +10,7 @@ import type {
 export interface DashboardData {
   usingSeed: boolean;
   house: House;
+  structures: Structure[];
   maintenance: MaintenanceItem[];
   seasonal: SeasonalTask[];
   projects: Project[];
@@ -32,6 +33,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     return {
       usingSeed: true,
       house: seed.seedHouse,
+      structures: seed.seedStructures,
       maintenance: seed.seedMaintenance,
       seasonal: seed.seedSeasonal,
       projects: seed.seedProjects,
@@ -43,9 +45,10 @@ export async function getDashboardData(): Promise<DashboardData> {
   }
 
   const db = supabaseAdmin();
-  const [house, maint, seasonal, projects, vitals, contacts, paints, pending] =
+  const [house, structures, maint, seasonal, projects, vitals, contacts, paints, pending] =
     await Promise.all([
       db.from("houses").select("*").limit(1).single(),
+      db.from("structures").select("*").order("sort"),
       db.from("maintenance_due").select("*").order("days_remaining", { ascending: true }),
       db.from("seasonal_tasks").select("*").order("start_month"),
       db.from("projects").select("*").order("created_at", { ascending: false }),
@@ -58,6 +61,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   return {
     usingSeed: false,
     house: (house.data as House) ?? seed.seedHouse,
+    structures: (structures.data as Structure[]) ?? [],
     maintenance: (maint.data as MaintenanceItem[]) ?? [],
     // Return the full set; the client filters to "this season" vs "all year".
     seasonal: (seasonal.data as SeasonalTask[]) ?? [],

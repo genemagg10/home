@@ -8,16 +8,18 @@ export const runtime = "nodejs";
 // are intentionally absent: edits target the underlying maintenance_items table.
 const COLUMNS: Record<string, string[]> = {
   houses: ["name", "address", "year_built", "sqft", "beds", "baths", "lat", "lon", "trash_day", "recycle_day"],
-  maintenance_items: ["title", "detail", "category", "interval_days", "last_done", "emoji"],
-  seasonal_tasks: ["title", "detail", "start_month", "end_month", "emoji"],
-  projects: ["title", "status", "percent", "next_step", "budget_cents", "contractor", "tags"],
-  vitals: ["label", "value", "is_sensitive", "sort"],
+  structures: ["name", "kind", "sqft", "beds", "baths", "notes", "emoji", "sort"],
+  maintenance_items: ["title", "detail", "category", "interval_days", "last_done", "emoji", "structure_id"],
+  seasonal_tasks: ["title", "detail", "start_month", "end_month", "emoji", "structure_id"],
+  projects: ["title", "status", "percent", "next_step", "budget_cents", "contractor", "tags", "structure_id"],
+  vitals: ["label", "value", "is_sensitive", "sort", "structure_id"],
   contacts: ["name", "phone", "role", "note", "sitter_safe"],
-  paints: ["room", "color_name", "brand", "sheen", "hex"],
+  paints: ["room", "color_name", "brand", "sheen", "hex", "structure_id"],
 };
 
 const NUMERIC: Record<string, string[]> = {
   houses: ["year_built", "sqft", "beds", "baths", "lat", "lon"],
+  structures: ["sqft", "beds", "baths", "sort"],
   maintenance_items: ["interval_days"],
   seasonal_tasks: ["start_month", "end_month"],
   projects: ["percent", "budget_cents"],

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { DashboardData } from "@/lib/data";
 import { monthInSeason } from "@/lib/data";
-import type { MaintenanceItem, DueStatus, Weather } from "@/lib/types";
+import type { MaintenanceItem, DueStatus, Weather, Structure } from "@/lib/types";
 import { saveRecord } from "@/lib/manage";
 import RecordForm, { type Field } from "@/components/RecordForm";
 import AddButton from "@/components/AddButton";
@@ -37,6 +37,16 @@ const ringClasses: Record<DueStatus, string> = {
 
 // Field schemas drive the generic add/edit form per table.
 const FIELDS: Record<string, Field[]> = {
+  structures: [
+    { key: "name", label: "Name", placeholder: "The Cottage" },
+    { key: "emoji", label: "Emoji", half: true, placeholder: "🏡" },
+    { key: "kind", label: "Type", half: true, placeholder: "adu / garage / shed" },
+    { key: "sqft", label: "Sq ft", type: "number", half: true },
+    { key: "beds", label: "Beds", type: "number", half: true },
+    { key: "baths", label: "Baths", type: "number", half: true },
+    { key: "sort", label: "Sort order", type: "number", half: true },
+    { key: "notes", label: "Notes", type: "textarea", placeholder: "Kitchen, living, 1 bath…" },
+  ],
   houses: [
     { key: "name", label: "House name" },
     { key: "address", label: "Address" },
@@ -104,6 +114,7 @@ const FIELDS: Record<string, Field[]> = {
 };
 
 const FORM_TITLE: Record<string, string> = {
+  structures: "structure",
   houses: "house profile",
   maintenance_items: "replacement",
   seasonal_tasks: "seasonal task",
@@ -124,13 +135,48 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
   const [allProjects, setAllProjects] = useState(false);
   const [form, setForm] = useState<FormState>(null);
 
+  // Structure filter: "all" · "main" (untagged / Main House) · a structure id.
+  const [structFilter, setStructFilter] = useState<string>("all");
+  const structures = data.structures;
+  const structById = (id: string | null) => structures.find((s) => s.id === id) || null;
+  const selectedStructure = structById(structFilter);
+  const matchStruct = (sid: string | null) =>
+    structFilter === "all" ? true : structFilter === "main" ? sid == null : sid === structFilter;
+
   const canManage = !data.usingSeed; // edits only persist with Supabase connected
   const month = new Date().getMonth() + 1;
   const seasonName = ["Winter","Winter","Spring","Spring","Spring","Summer","Summer","Summer","Fall","Fall","Fall","Winter"][month - 1];
-  const needsAttention = data.maintenance.filter((m) => m.status === "overdue").length;
 
-  const seasonal = yearView ? data.seasonal : data.seasonal.filter((s) => monthInSeason(s, month));
-  const projects = allProjects ? data.projects : data.projects.filter((p) => p.status === "active");
+  const maintenance = data.maintenance.filter((m) => matchStruct(m.structure_id));
+  const needsAttention = maintenance.filter((m) => m.status === "overdue").length;
+  const seasonalAll = data.seasonal.filter((s) => matchStruct(s.structure_id));
+  const seasonal = yearView ? seasonalAll : seasonalAll.filter((s) => monthInSeason(s, month));
+  const projectsAll = data.projects.filter((p) => matchStruct(p.structure_id));
+  const projects = allProjects ? projectsAll : projectsAll.filter((p) => p.status === "active");
+  const vitals = data.vitals.filter((v) => matchStruct(v.structure_id));
+  const paints = data.paints.filter((p) => matchStruct(p.structure_id));
+
+  // Tag shown on an item (only while viewing "All") so you can see which
+  // building it belongs to at a glance.
+  const StructTag = ({ id }: { id: string | null }) => {
+    if (structFilter !== "all") return null;
+    const s = structById(id);
+    if (!s) return null;
+    return <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#e9efe6] text-sage-dark whitespace-nowrap">{s.emoji} {s.name}</span>;
+  };
+
+  // Append a Structure dropdown to forms for taggable tables.
+  const STRUCT_TAGGABLE = new Set(["maintenance_items", "seasonal_tasks", "projects", "vitals", "paints"]);
+  const structOptions = [
+    { value: "", label: "⌂ Main House (whole property)" },
+    ...structures.map((s) => ({ value: s.id, label: `${s.emoji} ${s.name}` })),
+  ];
+  const fieldsFor = (table: string): Field[] => {
+    const base = FIELDS[table];
+    if (STRUCT_TAGGABLE.has(table) && structures.length > 0)
+      return [...base, { key: "structure_id", label: "Structure", type: "select", options: structOptions, half: true }];
+    return base;
+  };
 
   async function mutate(table: string, action: "insert" | "update" | "delete", opts: { id?: string; values?: Record<string, unknown> } = {}) {
     await saveRecord(table, action, opts);
@@ -233,6 +279,50 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
         </div>
       )}
 
+      {/* Structure filter — only shown once there's more than the Main House */}
+      {(structures.length > 0 || (edit && canManage)) && (
+        <div className="flex items-center flex-wrap gap-2 mb-4">
+          {([["all", "All"], ["main", "⌂ Main House"]] as const).map(([val, label]) => (
+            <button key={val} onClick={() => setStructFilter(val)}
+              className={`text-sm px-3.5 py-1.5 rounded-full border transition-colors ${structFilter === val ? "bg-sage text-white border-sage" : "border-line bg-card hover:border-sage"}`}>
+              {label}
+            </button>
+          ))}
+          {structures.map((s) => (
+            <button key={s.id} onClick={() => setStructFilter(s.id)}
+              className={`text-sm px-3.5 py-1.5 rounded-full border transition-colors ${structFilter === s.id ? "bg-sage text-white border-sage" : "border-line bg-card hover:border-sage"}`}>
+              {s.emoji} {s.name}
+            </button>
+          ))}
+          {edit && canManage && (
+            <button onClick={() => openAdd("structures")} className="text-sm px-3.5 py-1.5 rounded-full border border-dashed border-sage text-sage-dark">
+              + Structure
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Selected structure's profile */}
+      {selectedStructure && (
+        <div className="card mb-4 flex items-center gap-3">
+          <span className="text-2xl">{selectedStructure.emoji}</span>
+          <div className="flex-1">
+            <b className="font-serif text-lg">{selectedStructure.name}</b>
+            <div className="text-muted text-[13px]">
+              {[selectedStructure.kind, selectedStructure.sqft && `${selectedStructure.sqft.toLocaleString()} sq ft`,
+                (selectedStructure.beds || selectedStructure.baths) && `${selectedStructure.beds ?? "?"} bd / ${selectedStructure.baths ?? "?"} ba`,
+                selectedStructure.notes].filter(Boolean).join(" · ")}
+            </div>
+          </div>
+          {edit && canManage && (
+            <div className="flex items-center gap-0.5">
+              <Icon title="Edit structure" onClick={() => openEdit("structures", selectedStructure.id, selectedStructure as unknown as Record<string, unknown>)}>✏️</Icon>
+              <Icon title="Delete structure" onClick={async () => { await del("structures", selectedStructure.id, selectedStructure.name); setStructFilter("all"); }}>🗑</Icon>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Review queue banner */}
       {data.pendingCount > 0 && (
         <a href="/review" className="flex items-center gap-3 mb-6 rounded-2xl border border-gold px-5 py-3.5"
@@ -252,16 +342,16 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
           <h2 className="card-title">🔧 Coming up to replace
             {edit && canManage
               ? <AddLink table="maintenance_items" />
-              : <span className="ml-auto text-xs text-faint font-sans font-normal">{data.maintenance.length} tracked</span>}
+              : <span className="ml-auto text-xs text-faint font-sans font-normal">{maintenance.length} tracked</span>}
           </h2>
-          {data.maintenance.length === 0 && <p className="text-muted text-sm">Nothing tracked yet.</p>}
-          {data.maintenance.map((m) => {
+          {maintenance.length === 0 && <p className="text-muted text-sm">Nothing tracked yet.</p>}
+          {maintenance.map((m) => {
             const d = dueLabel(m);
             return (
               <div key={m.id} className="flex items-center gap-3 py-2.5 border-b border-[#f1ebdd] last:border-0">
                 <div className={`w-[34px] h-[34px] rounded-full grid place-items-center text-[15px] ${ringClasses[d.tone]}`}>{m.emoji}</div>
                 <div className="flex-1">
-                  <b className="font-semibold">{m.title}</b>
+                  <b className="font-semibold">{m.title}</b> <StructTag id={m.structure_id} />
                   {m.detail && <small className="block text-muted text-[12.5px] mt-0.5">{m.detail}</small>}
                 </div>
                 {edit && canManage ? (
@@ -286,7 +376,7 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
                 {yearView ? "This season" : "Year view"}
               </button>
               <AddLink table="seasonal_tasks" />
-              {!edit && <span className="text-xs text-faint font-sans font-normal">{yearView ? `${data.seasonal.length} all year` : seasonName.toLowerCase()}</span>}
+              {!edit && <span className="text-xs text-faint font-sans font-normal">{yearView ? `${seasonalAll.length} all year` : seasonName.toLowerCase()}</span>}
             </div>
           </h2>
           {seasonal.length === 0 && <p className="text-muted text-sm">Nothing {yearView ? "yet" : "for this season"}.</p>}
@@ -296,7 +386,7 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
               <div key={s.id} className={`flex items-center gap-3 py-2.5 border-b border-[#f1ebdd] last:border-0 ${flag ? "-mx-2 px-2 rounded-lg bg-[#eef3f8]" : ""}`}>
                 <div className="w-[34px] h-[34px] rounded-full grid place-items-center text-[15px] bg-[#e3e9ef] text-[#5f7896]">{s.emoji}</div>
                 <div className="flex-1">
-                  <b className="font-semibold">{s.title}{flag && <span className="text-[#5f7896]"> · ❄️ tonight</span>}</b>
+                  <b className="font-semibold">{s.title}{flag && <span className="text-[#5f7896]"> · ❄️ tonight</span>}</b> <StructTag id={s.structure_id} />
                   {s.detail && <small className="block text-muted text-[12.5px] mt-0.5">{s.detail}</small>}
                 </div>
                 {edit && canManage ? (
@@ -329,9 +419,10 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
           {projects.map((p) => (
             <div key={p.id} className="py-3.5 border-b border-[#f1ebdd] last:border-0">
               <div className="flex justify-between items-baseline mb-2 gap-3">
-                <b className="font-serif text-base flex items-center gap-2">
+                <b className="font-serif text-base flex items-center gap-2 flex-wrap">
                   {p.title}
                   {p.status !== "active" && <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#f1ece0] text-muted font-sans">{p.status}</span>}
+                  <StructTag id={p.structure_id} />
                 </b>
                 {edit && canManage ? (
                   <div className="flex items-center gap-0.5">
@@ -360,7 +451,7 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
         <section className="card">
           <h2 className="card-title">🗝️ Good to know<AddLink table="vitals" /></h2>
           <div className="grid grid-cols-2 gap-3.5">
-            {data.vitals.map((v) => (
+            {vitals.map((v) => (
               <div key={v.id} className="group">
                 <div className="text-[11.5px] text-faint uppercase tracking-wide flex items-center gap-1">
                   {v.label}
@@ -371,7 +462,7 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
                     </span>
                   )}
                 </div>
-                <div className="text-[13.5px] mt-0.5">{v.value}</div>
+                <div className="text-[13.5px] mt-0.5">{v.value} <StructTag id={v.structure_id} /></div>
               </div>
             ))}
           </div>
@@ -382,11 +473,11 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
           <h2 className="card-title">🎨 Paint library
             {edit && canManage ? <AddLink table="paints" /> : <span className="ml-auto text-xs text-faint font-sans font-normal">by room</span>}
           </h2>
-          {data.paints.map((p) => (
+          {paints.map((p) => (
             <div key={p.id} className="flex items-center gap-3 py-2 border-b border-[#f1ebdd] last:border-0">
               <span className="w-[26px] h-[26px] rounded-lg border border-black/10 flex-none" style={{ background: p.hex ?? "#ccc" }} />
               <div className="flex-1">
-                <b className="font-semibold">{p.room}</b>
+                <b className="font-semibold">{p.room}</b> <StructTag id={p.structure_id} />
                 <small className="block text-muted text-xs">
                   {[p.brand, p.color_name, p.sheen].filter(Boolean).join(" · ")}
                 </small>
@@ -438,7 +529,7 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
           title={form.table === "houses" && form.action === "insert"
             ? "Set up your house"
             : `${form.action === "insert" ? "Add" : "Edit"} ${FORM_TITLE[form.table]}`}
-          fields={FIELDS[form.table]}
+          fields={fieldsFor(form.table)}
           initial={form.initial}
           submitLabel={form.action === "insert" ? "Add" : "Save"}
           onClose={() => setForm(null)}

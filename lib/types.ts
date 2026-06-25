@@ -14,6 +14,20 @@ export interface House {
   recycle_day: string | null;
 }
 
+// Additional buildings on the property (e.g. a backyard cottage / ADU). The
+// Main House stays the houses row; items with no structure_id belong to it.
+export interface Structure {
+  id: string;
+  name: string;
+  kind: string | null;
+  sqft: number | null;
+  beds: number | null;
+  baths: number | null;
+  notes: string | null;
+  emoji: string;
+  sort: number;
+}
+
 export interface MaintenanceItem {
   id: string;
   title: string;
@@ -25,6 +39,7 @@ export interface MaintenanceItem {
   due_date: string | null;
   status: DueStatus;
   days_remaining: number | null;
+  structure_id: string | null;
 }
 
 export interface SeasonalTask {
@@ -34,6 +49,7 @@ export interface SeasonalTask {
   start_month: number;
   end_month: number;
   emoji: string;
+  structure_id: string | null;
 }
 
 export interface Project {
@@ -45,6 +61,7 @@ export interface Project {
   budget_cents: number | null;
   contractor: string | null;
   tags: string[];
+  structure_id: string | null;
 }
 
 export interface Vital {
@@ -53,6 +70,7 @@ export interface Vital {
   value: string;
   is_sensitive: boolean;
   sort: number;
+  structure_id: string | null;
 }
 
 export interface Contact {
@@ -71,6 +89,7 @@ export interface Paint {
   brand: string | null;
   sheen: string | null;
   hex: string | null;
+  structure_id: string | null;
 }
 
 export interface DocumentRow {
