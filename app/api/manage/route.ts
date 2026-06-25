@@ -46,10 +46,18 @@ export async function POST(req: Request) {
 
   const db = supabaseAdmin();
 
+  // When a write returns zero affected rows with no error, RLS silently blocked
+  // it — almost always because SUPABASE_SERVICE_ROLE_KEY holds the wrong value
+  // (e.g. the anon key). Surface that instead of failing silently.
+  const RLS_HINT =
+    "Write was blocked (0 rows changed). This usually means SUPABASE_SERVICE_ROLE_KEY in Vercel " +
+    "is not the service_role secret — copy it from Supabase → Settings → API → service_role, then redeploy.";
+
   if (action === "delete") {
     if (!id) return Response.json({ error: "id required" }, { status: 400 });
-    const { error } = await db.from(table).delete().eq("id", id);
+    const { data, error } = await db.from(table).delete().eq("id", id).select("id");
     if (error) return Response.json({ error: error.message }, { status: 500 });
+    if (!data || data.length === 0) return Response.json({ error: RLS_HINT }, { status: 403 });
     return Response.json({ ok: true });
   }
 
@@ -68,8 +76,9 @@ export async function POST(req: Request) {
 
   if (action === "update") {
     if (!id) return Response.json({ error: "id required" }, { status: 400 });
-    const { error } = await db.from(table).update(clean).eq("id", id);
+    const { data, error } = await db.from(table).update(clean).eq("id", id).select("id");
     if (error) return Response.json({ error: error.message }, { status: 500 });
+    if (!data || data.length === 0) return Response.json({ error: RLS_HINT }, { status: 403 });
     return Response.json({ ok: true });
   }
 
@@ -78,7 +87,8 @@ export async function POST(req: Request) {
     const { data: house } = await db.from("houses").select("id").limit(1).single();
     clean.house_id = house?.id ?? null;
   }
-  const { data, error } = await db.from(table).insert(clean).select("id").single();
+  const { data, error } = await db.from(table).insert(clean).select("id");
   if (error) return Response.json({ error: error.message }, { status: 500 });
-  return Response.json({ ok: true, id: data.id });
+  if (!data || data.length === 0) return Response.json({ error: RLS_HINT }, { status: 403 });
+  return Response.json({ ok: true, id: data[0].id });
 }

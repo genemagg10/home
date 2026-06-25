@@ -178,7 +178,7 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
           <div>
             <h1 className="font-serif text-2xl font-semibold flex items-center gap-2">
               {data.house.name}
-              {canManage && (
+              {edit && canManage && (
                 <Icon title="Edit house name, address & details" onClick={openHouseForm}>✏️</Icon>
               )}
             </h1>
@@ -189,14 +189,6 @@ export default function DashboardClient({ data, weather }: { data: DashboardData
           </div>
         </div>
         <div className="flex gap-2.5 items-center">
-          <a className="btn relative" href="/review">
-            📥 Review
-            {data.pendingCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-clay text-white text-[11px] grid place-items-center">
-                {data.pendingCount}
-              </span>
-            )}
-          </a>
           <a className="btn" href="/sitter">⤓ Sitter guide</a>
           {canManage && (
             <button className={`btn ${edit ? "btn-primary" : ""}`} onClick={() => setEdit((e) => !e)}>
